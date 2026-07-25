@@ -1,0 +1,45 @@
+{
+  "description": {
+    "text": "Lightning"
+  },
+  "supported_items": [
+    "minecraft:wooden_spear",
+    "minecraft:stone_spear",
+    "minecraft:iron_spear",
+    "minecraft:golden_spear",
+    "minecraft:diamond_spear",
+    "minecraft:netherite_spear"
+  ],
+  "primary_items": [
+    "minecraft:wooden_spear",
+    "minecraft:stone_spear",
+    "minecraft:iron_spear",
+    "minecraft:golden_spear",
+    "minecraft:diamond_spear",
+    "minecraft:netherite_spear"
+  ],
+  "weight": 1,
+  "max_level": 1,
+  "min_cost": {
+    "base": 30,
+    "per_level_above_first": 0
+  },
+  "max_cost": {
+    "base": 60,
+    "per_level_above_first": 0
+  },
+  "anvil_cost": 6,
+  "effects": {
+    "minecraft:post_attack": [
+      {
+        "enchanted": "attacker",
+        "affected": "victim",
+        "effect": {
+          "type": "minecraft:summon_entity",
+          "entity": "minecraft:lightning_bolt",
+          "join_team": false
+        }
+      }
+    ]
+  }
+}

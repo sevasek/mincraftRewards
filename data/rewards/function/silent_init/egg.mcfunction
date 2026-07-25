@@ -1,0 +1,21 @@
+execute if score @s rwd_egg matches 100.. run scoreboard players set @s rwd_egg_stage 1
+execute if score @s rwd_egg matches 621.. run scoreboard players set @s rwd_egg_stage 2
+execute if score @s rwd_egg matches 1142.. run scoreboard players set @s rwd_egg_stage 3
+execute if score @s rwd_egg matches 1663.. run scoreboard players set @s rwd_egg_stage 4
+execute if score @s rwd_egg matches 2184.. run scoreboard players set @s rwd_egg_stage 5
+execute if score @s rwd_egg matches 2705.. run scoreboard players set @s rwd_egg_stage 6
+execute if score @s rwd_egg matches 3226.. run scoreboard players set @s rwd_egg_stage 7
+execute if score @s rwd_egg matches 3747.. run scoreboard players set @s rwd_egg_stage 8
+execute if score @s rwd_egg matches 4268.. run scoreboard players set @s rwd_egg_stage 9
+execute if score @s rwd_egg matches 4789.. run scoreboard players set @s rwd_egg_stage 10
+execute if score @s rwd_egg matches 5311.. run scoreboard players set @s rwd_egg_stage 11
+execute if score @s rwd_egg matches 5832.. run scoreboard players set @s rwd_egg_stage 12
+execute if score @s rwd_egg matches 6353.. run scoreboard players set @s rwd_egg_stage 13
+execute if score @s rwd_egg matches 6874.. run scoreboard players set @s rwd_egg_stage 14
+execute if score @s rwd_egg matches 7395.. run scoreboard players set @s rwd_egg_stage 15
+execute if score @s rwd_egg matches 7916.. run scoreboard players set @s rwd_egg_stage 16
+execute if score @s rwd_egg matches 8437.. run scoreboard players set @s rwd_egg_stage 17
+execute if score @s rwd_egg matches 8958.. run scoreboard players set @s rwd_egg_stage 18
+execute if score @s rwd_egg matches 9479.. run scoreboard players set @s rwd_egg_stage 19
+execute if score @s rwd_egg matches 10000.. run scoreboard players set @s rwd_egg_stage 20
+scoreboard players operation @s rwd_egg_last = @s rwd_egg

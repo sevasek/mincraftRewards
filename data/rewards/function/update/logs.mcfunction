@@ -1,0 +1,19 @@
+scoreboard players set @s rwd_logs 0
+scoreboard players operation @s rwd_logs += @s st_oak_log
+scoreboard players operation @s rwd_logs += @s st_birch_log
+scoreboard players operation @s rwd_logs += @s st_spruce_log
+scoreboard players operation @s rwd_logs += @s st_jungle_log
+scoreboard players operation @s rwd_logs += @s st_acacia_log
+scoreboard players operation @s rwd_logs += @s st_dark_oak_log
+scoreboard players operation @s rwd_logs += @s st_mangrove_log
+scoreboard players operation @s rwd_logs += @s st_cherry_log
+scoreboard players operation @s rwd_logs += @s st_oak_wood
+scoreboard players operation @s rwd_logs += @s st_birch_wood
+scoreboard players operation @s rwd_logs += @s st_spruce_wood
+scoreboard players operation @s rwd_logs += @s st_jungle_wood
+scoreboard players operation @s rwd_logs += @s st_acacia_wood
+scoreboard players operation @s rwd_logs += @s st_dark_oak_woo
+scoreboard players operation @s rwd_logs += @s st_mangrove_woo
+scoreboard players operation @s rwd_logs += @s st_cherry_wood
+execute unless score @s rwd_logs = @s rwd_log_last run function rewards:progress/logs
+scoreboard players operation @s rwd_log_last = @s rwd_logs

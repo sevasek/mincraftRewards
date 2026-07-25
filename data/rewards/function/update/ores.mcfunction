@@ -1,0 +1,22 @@
+scoreboard players set @s rwd_ores 0
+scoreboard players operation @s rwd_ores += @s st_coal
+scoreboard players operation @s rwd_ores += @s st_ds_coal
+scoreboard players operation @s rwd_ores += @s st_iron
+scoreboard players operation @s rwd_ores += @s st_ds_iron
+scoreboard players operation @s rwd_ores += @s st_copper
+scoreboard players operation @s rwd_ores += @s st_ds_copper
+scoreboard players operation @s rwd_ores += @s st_gold
+scoreboard players operation @s rwd_ores += @s st_ds_gold
+scoreboard players operation @s rwd_ores += @s st_nether_gold
+scoreboard players operation @s rwd_ores += @s st_lapis
+scoreboard players operation @s rwd_ores += @s st_ds_lapis
+scoreboard players operation @s rwd_ores += @s st_redstone
+scoreboard players operation @s rwd_ores += @s st_ds_redstone
+scoreboard players operation @s rwd_ores += @s st_emerald
+scoreboard players operation @s rwd_ores += @s st_ds_emerald
+scoreboard players operation @s rwd_ores += @s st_diamond
+scoreboard players operation @s rwd_ores += @s st_ds_diamond
+scoreboard players operation @s rwd_ores += @s st_nether_quart
+scoreboard players operation @s rwd_ores += @s st_ancient_debr
+execute unless score @s rwd_ores = @s rwd_ore_last run function rewards:progress/ores
+scoreboard players operation @s rwd_ore_last = @s rwd_ores

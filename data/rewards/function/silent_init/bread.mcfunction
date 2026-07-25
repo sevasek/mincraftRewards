@@ -1,0 +1,21 @@
+execute if score @s rwd_bread matches 1.. run scoreboard players set @s rwd_bread_stage 1
+execute if score @s rwd_bread matches 11.. run scoreboard players set @s rwd_bread_stage 2
+execute if score @s rwd_bread matches 21.. run scoreboard players set @s rwd_bread_stage 3
+execute if score @s rwd_bread matches 31.. run scoreboard players set @s rwd_bread_stage 4
+execute if score @s rwd_bread matches 41.. run scoreboard players set @s rwd_bread_stage 5
+execute if score @s rwd_bread matches 51.. run scoreboard players set @s rwd_bread_stage 6
+execute if score @s rwd_bread matches 61.. run scoreboard players set @s rwd_bread_stage 7
+execute if score @s rwd_bread matches 71.. run scoreboard players set @s rwd_bread_stage 8
+execute if score @s rwd_bread matches 81.. run scoreboard players set @s rwd_bread_stage 9
+execute if score @s rwd_bread matches 91.. run scoreboard players set @s rwd_bread_stage 10
+execute if score @s rwd_bread matches 102.. run scoreboard players set @s rwd_bread_stage 11
+execute if score @s rwd_bread matches 112.. run scoreboard players set @s rwd_bread_stage 12
+execute if score @s rwd_bread matches 122.. run scoreboard players set @s rwd_bread_stage 13
+execute if score @s rwd_bread matches 132.. run scoreboard players set @s rwd_bread_stage 14
+execute if score @s rwd_bread matches 142.. run scoreboard players set @s rwd_bread_stage 15
+execute if score @s rwd_bread matches 152.. run scoreboard players set @s rwd_bread_stage 16
+execute if score @s rwd_bread matches 162.. run scoreboard players set @s rwd_bread_stage 17
+execute if score @s rwd_bread matches 172.. run scoreboard players set @s rwd_bread_stage 18
+execute if score @s rwd_bread matches 182.. run scoreboard players set @s rwd_bread_stage 19
+execute if score @s rwd_bread matches 192.. run scoreboard players set @s rwd_bread_stage 20
+scoreboard players operation @s rwd_bread_last = @s rwd_bread

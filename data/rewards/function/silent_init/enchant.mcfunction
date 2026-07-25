@@ -1,0 +1,21 @@
+execute if score @s rwd_enchant matches 20.. run scoreboard players set @s rwd_ench_stage 1
+execute if score @s rwd_enchant matches 40.. run scoreboard players set @s rwd_ench_stage 2
+execute if score @s rwd_enchant matches 60.. run scoreboard players set @s rwd_ench_stage 3
+execute if score @s rwd_enchant matches 80.. run scoreboard players set @s rwd_ench_stage 4
+execute if score @s rwd_enchant matches 100.. run scoreboard players set @s rwd_ench_stage 5
+execute if score @s rwd_enchant matches 120.. run scoreboard players set @s rwd_ench_stage 6
+execute if score @s rwd_enchant matches 140.. run scoreboard players set @s rwd_ench_stage 7
+execute if score @s rwd_enchant matches 160.. run scoreboard players set @s rwd_ench_stage 8
+execute if score @s rwd_enchant matches 180.. run scoreboard players set @s rwd_ench_stage 9
+execute if score @s rwd_enchant matches 200.. run scoreboard players set @s rwd_ench_stage 10
+execute if score @s rwd_enchant matches 220.. run scoreboard players set @s rwd_ench_stage 11
+execute if score @s rwd_enchant matches 240.. run scoreboard players set @s rwd_ench_stage 12
+execute if score @s rwd_enchant matches 260.. run scoreboard players set @s rwd_ench_stage 13
+execute if score @s rwd_enchant matches 280.. run scoreboard players set @s rwd_ench_stage 14
+execute if score @s rwd_enchant matches 300.. run scoreboard players set @s rwd_ench_stage 15
+execute if score @s rwd_enchant matches 320.. run scoreboard players set @s rwd_ench_stage 16
+execute if score @s rwd_enchant matches 340.. run scoreboard players set @s rwd_ench_stage 17
+execute if score @s rwd_enchant matches 360.. run scoreboard players set @s rwd_ench_stage 18
+execute if score @s rwd_enchant matches 380.. run scoreboard players set @s rwd_ench_stage 19
+execute if score @s rwd_enchant matches 400.. run scoreboard players set @s rwd_ench_stage 20
+scoreboard players operation @s rwd_enchant_last = @s rwd_enchant
