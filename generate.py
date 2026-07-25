@@ -492,6 +492,7 @@ load_lines += [
     "# Enchanting counters (mod-based, unlimited)",
     "scoreboard objectives add rwd_enc_m10 dummy",
     "scoreboard objectives add rwd_enc_m50 dummy",
+    "scoreboard objectives add rwd_enc_m100 dummy",
     "scoreboard objectives add rwd_enc_delta dummy",
     "",
     "# Weapon kill tracking (window-based detection)",
@@ -632,8 +633,10 @@ write("data/rewards/function/enchant/give_bottle.mcfunction", "\n".join([
     "scoreboard players remove @s rwd_enc_delta 1",
     "scoreboard players add @s rwd_enc_m10 1",
     "scoreboard players add @s rwd_enc_m50 1",
+    "scoreboard players add @s rwd_enc_m100 1",
     "execute if score @s rwd_enc_m10 matches 10.. run function rewards:enchant/give_book",
     "execute if score @s rwd_enc_m50 matches 50.. run function rewards:enchant/give_anvil",
+    "execute if score @s rwd_enc_m100 matches 100.. run function rewards:enchant/give_lightning_book",
     "execute if score @s rwd_enc_delta matches 1.. run function rewards:enchant/give_bottle",
 ]))
 
@@ -649,6 +652,13 @@ write("data/rewards/function/enchant/give_anvil.mcfunction", "\n".join([
     r'tellraw @s [{"text":"[Rewards] ","color":"gold","bold":true},{"text":"You received: ","color":"gray"},{"text":"Anvil","color":"aqua","bold":true}]',
     "scoreboard players remove @s rwd_enc_m50 50",
     "execute if score @s rwd_enc_m50 matches 50.. run function rewards:enchant/give_anvil",
+]))
+
+write("data/rewards/function/enchant/give_lightning_book.mcfunction", "\n".join([
+    "give @s minecraft:enchanted_book[stored_enchantments={rewards:lightning:1}]",
+    r'tellraw @s [{"text":"[Rewards] ","color":"gold","bold":true},{"text":"You received: ","color":"gray"},{"text":"Lightning Book","color":"aqua","bold":true}]',
+    "scoreboard players remove @s rwd_enc_m100 100",
+    "execute if score @s rwd_enc_m100 matches 100.. run function rewards:enchant/give_lightning_book",
 ]))
 
 # When a spear kill is detected: increment counter and show progress
@@ -847,6 +857,7 @@ write("data/rewards/function/do_init.mcfunction", "\n".join([
     # Enchanting mod counters (start fresh — no retroactive book/anvil spam)
     "scoreboard players add @s rwd_enc_m10 0",
     "scoreboard players add @s rwd_enc_m50 0",
+    "scoreboard players add @s rwd_enc_m100 0",
     "scoreboard players add @s rwd_enc_delta 0",
     # Silent init: set stage from existing lifetime stats, no items given
     "function rewards:silent_init/logs",
