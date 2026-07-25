@@ -509,6 +509,7 @@ load_lines += [
     "scoreboard objectives add rwd_mace_stage dummy",
     "scoreboard objectives add rwd_all_kills dummy",
     "scoreboard objectives add rwd_kill_snap dummy",
+    "scoreboard objectives add rwd_wkill_flag dummy",
     "",
     "# Previous-tick snapshots for change detection",
     "scoreboard objectives add rwd_log_last dummy",
@@ -664,10 +665,12 @@ write("data/rewards/function/enchant/give_lightning_book.mcfunction", "\n".join(
 # When a spear kill is detected: increment counter and show progress
 write("data/rewards/function/weapon_kill/spear.mcfunction", "\n".join([
     "scoreboard players add @s rwd_spear_kills 1",
+    "scoreboard players set @s rwd_wkill_flag 1",
     "function rewards:progress/spear",
 ]))
 write("data/rewards/function/weapon_kill/mace.mcfunction", "\n".join([
     "scoreboard players add @s rwd_mace_kills 1",
+    "scoreboard players set @s rwd_wkill_flag 1",
     "function rewards:progress/mace",
 ]))
 
@@ -693,7 +696,12 @@ def write_update_simple(category, total_obj, last_obj):
 write_update("logs", LOG_TYPES, lambda b: b[:12], "rwd_logs", "rwd_log_last")
 write_update("ores", ORE_TYPES, lambda b: b.replace("deepslate_","ds_").replace("_ore","")[:12], "rwd_ores", "rwd_ore_last")
 write_update("dirt", DIRT_TYPES, lambda b: f"d_{b[:9]}", "rwd_dirt", "rwd_dirt_last")
-write_update_simple("kills",   "rwd_kills",   "rwd_kill_last")
+# Kills: suppress progress display when a spear/mace kill already showed it this tick
+write("data/rewards/function/update/kills.mcfunction", "\n".join([
+    "execute unless score @s rwd_kills = @s rwd_kill_last if score @s rwd_wkill_flag matches 0 run function rewards:progress/kills",
+    "scoreboard players set @s rwd_wkill_flag 0",
+    "scoreboard players operation @s rwd_kill_last = @s rwd_kills",
+]))
 write_update_simple("damage",  "rwd_damage",  "rwd_dmg_last")
 write_update_simple("shear",   "rwd_enchanting", "rwd_shear_last")
 write_update_simple("milk",    "rwd_milk",    "rwd_milk_last")
@@ -854,6 +862,7 @@ write("data/rewards/function/do_init.mcfunction", "\n".join([
     "scoreboard players add @s rwd_mace_win 0",
     "scoreboard players add @s rwd_mace_ul 0",
     "scoreboard players add @s rwd_kill_snap 0",
+    "scoreboard players add @s rwd_wkill_flag 0",
     # Enchanting mod counters (start fresh — no retroactive book/anvil spam)
     "scoreboard players add @s rwd_enc_m10 0",
     "scoreboard players add @s rwd_enc_m50 0",
