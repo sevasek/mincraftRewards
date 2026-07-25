@@ -20,7 +20,6 @@ MILESTONES_DIRT   = milestones(20, lo=10,  hi=3015)
 MILESTONES_EGG    = milestones(20, lo=100, hi=10000)
 MILESTONES_BREAD  = milestones(20, lo=1,   hi=192)
 MILESTONES_WEAPON = milestones(20, lo=1,   hi=100)
-MILESTONES_ENCHANT= milestones(20, lo=20,  hi=400)
 
 def roman(n):
     r = {1:"I",2:"II",3:"III",4:"IV",5:"V",6:"VI",7:"VII",8:"VIII",9:"IX",10:"X"}
@@ -166,31 +165,7 @@ MACE_KILL_REWARDS = [
     ("minecraft:elytra", []),
 ]
 
-# ─── ENCHANTING (enchant_item stat) ─────────────────────────────────────────────
-# reward[3] is an optional display name override (used when material embeds component data)
 _MB = "minecraft:enchanted_book[stored_enchantments={mending:1}]"
-ENCHANT_REWARDS = [
-    ("minecraft:experience_bottle", [], 3),
-    ("minecraft:experience_bottle", [], 6),
-    (_MB,                           [], 1, "Mending Book"),
-    ("minecraft:experience_bottle", [], 9),
-    ("minecraft:experience_bottle", [], 12),
-    (_MB,                           [], 1, "Mending Book"),
-    ("minecraft:experience_bottle", [], 15),
-    ("minecraft:experience_bottle", [], 18),
-    (_MB,                           [], 1, "Mending Book"),
-    ("minecraft:experience_bottle", [], 21),
-    ("minecraft:experience_bottle", [], 24),
-    (_MB,                           [], 1, "Mending Book"),
-    ("minecraft:experience_bottle", [], 27),
-    ("minecraft:experience_bottle", [], 30),
-    (_MB,                           [], 1, "Mending Book"),
-    ("minecraft:experience_bottle", [], 32),
-    ("minecraft:experience_bottle", [], 32),
-    (_MB,                           [], 1, "Mending Book"),
-    ("minecraft:experience_bottle", [], 32),
-    (_MB,                           [], 2, "Mending Book x2"),
-]
 
 # ─── SHEARS (sheep shearing) ────────────────────────────────────────────────────
 SHEAR_REWARDS = [
@@ -478,7 +453,11 @@ load_lines += [
     "scoreboard objectives add rwd_bread minecraft.crafted:minecraft.bread",
     "scoreboard objectives add rwd_bread_stage dummy",
     "scoreboard objectives add rwd_enchant minecraft.custom:minecraft.enchant_item",
-    "scoreboard objectives add rwd_ench_stage dummy",
+    "",
+    "# Enchanting counters (mod-based, unlimited)",
+    "scoreboard objectives add rwd_enc_m10 dummy",
+    "scoreboard objectives add rwd_enc_m50 dummy",
+    "scoreboard objectives add rwd_enc_delta dummy",
     "",
     "# Weapon kill tracking (window-based detection)",
     "scoreboard objectives add rwd_pkills minecraft.custom:minecraft.player_kills",
@@ -507,6 +486,7 @@ load_lines += [
     "scoreboard objectives add rwd_bread_last dummy",
     "scoreboard objectives add rwd_enchant_last dummy",
     "scoreboard objectives add rwd_spear_kl dummy",
+
     "scoreboard objectives add rwd_mace_kl dummy",
     "",
     "# Initialisation flag",
@@ -528,11 +508,12 @@ load_lines += [
 write("data/rewards/function/load.mcfunction", "\n".join(load_lines))
 
 # ─── TICK FUNCTION ─────────────────────────────────────────────────────────────
-# player_init and weapon_kill_detect run every game tick (20/sec) for responsiveness.
-# All other checks run at 1 Hz (every 20 ticks) to keep overhead low.
+# player_init, weapon_kill_detect, enchant_check run every game tick (20/sec).
+# All milestone checks run at 1 Hz (every 20 ticks).
 write("data/rewards/function/tick.mcfunction", """\
 execute as @a run function rewards:player_init
 execute as @a run function rewards:weapon_kill_detect
+execute as @a run function rewards:enchant_check
 scoreboard players add .tick rwd_tick 1
 execute if score .tick rwd_tick matches 20.. run scoreboard players set .tick rwd_tick 0
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_log_stage=..19}] at @s run function rewards:update/logs
@@ -544,7 +525,6 @@ execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_shear_st
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_milk_stage=..19}] run function rewards:update/milk
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_egg_stage=..19}] run function rewards:update/egg
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_bread_stage=..19}] run function rewards:update/bread
-execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_ench_stage=..19}] run function rewards:update/enchant
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_log_stage=..19}] run function rewards:check/logs
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_ore_stage=..19}] run function rewards:check/ores
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_kill_stage=..19}] run function rewards:check/kills
@@ -556,7 +536,6 @@ execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_egg_stag
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_bread_stage=..19}] run function rewards:check/bread
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_spear_stage=..19}] run function rewards:check/spear
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_mace_stage=..19}] run function rewards:check/mace
-execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_ench_stage=..19}] run function rewards:check/enchant
 """)
 
 # ─── WEAPON KILL DETECTION (runs every tick) ───────────────────────────────────
@@ -596,6 +575,47 @@ wkd_lines += [
 ]
 write("data/rewards/function/weapon_kill_detect.mcfunction", "\n".join(wkd_lines))
 
+# ─── ENCHANTING (unlimited, mod-based) ────────────────────────────────────────
+# Runs every tick. Detects new enchants via stat change, then:
+#   every enchant → 1 XP bottle   every 10th → mending book   every 50th → anvil
+write("data/rewards/function/enchant_check.mcfunction", "\n".join([
+    "execute unless score @s rwd_enchant = @s rwd_enchant_last run function rewards:enchant/on_enchant",
+    "scoreboard players operation @s rwd_enchant_last = @s rwd_enchant",
+]))
+
+write("data/rewards/function/enchant/on_enchant.mcfunction", "\n".join([
+    "# Compute delta (how many enchants since last tick)",
+    "scoreboard players set @s rwd_enc_delta 0",
+    "scoreboard players operation @s rwd_enc_delta += @s rwd_enchant",
+    "scoreboard players operation @s rwd_enc_delta -= @s rwd_enchant_last",
+    "execute if score @s rwd_enc_delta matches 1.. run function rewards:enchant/give_bottle",
+]))
+
+write("data/rewards/function/enchant/give_bottle.mcfunction", "\n".join([
+    "give @s minecraft:experience_bottle",
+    r'title @s actionbar [{"text":"Enchanting ✦  ","color":"light_purple","bold":true},{"score":{"name":"@s","objective":"rwd_enchant"},"color":"white"},{"text":" enchants","color":"gray"}]',
+    "scoreboard players remove @s rwd_enc_delta 1",
+    "scoreboard players add @s rwd_enc_m10 1",
+    "scoreboard players add @s rwd_enc_m50 1",
+    "execute if score @s rwd_enc_m10 matches 10.. run function rewards:enchant/give_book",
+    "execute if score @s rwd_enc_m50 matches 50.. run function rewards:enchant/give_anvil",
+    "execute if score @s rwd_enc_delta matches 1.. run function rewards:enchant/give_bottle",
+]))
+
+write("data/rewards/function/enchant/give_book.mcfunction", "\n".join([
+    f"give @s {_MB}",
+    r'tellraw @s [{"text":"[Rewards] ","color":"gold","bold":true},{"text":"You received: ","color":"gray"},{"text":"Mending Book","color":"aqua","bold":true}]',
+    "scoreboard players remove @s rwd_enc_m10 10",
+    "execute if score @s rwd_enc_m10 matches 10.. run function rewards:enchant/give_book",
+]))
+
+write("data/rewards/function/enchant/give_anvil.mcfunction", "\n".join([
+    "give @s minecraft:anvil",
+    r'tellraw @s [{"text":"[Rewards] ","color":"gold","bold":true},{"text":"You received: ","color":"gray"},{"text":"Anvil","color":"aqua","bold":true}]',
+    "scoreboard players remove @s rwd_enc_m50 50",
+    "execute if score @s rwd_enc_m50 matches 50.. run function rewards:enchant/give_anvil",
+]))
+
 # When a spear kill is detected: increment counter and show progress
 write("data/rewards/function/weapon_kill/spear.mcfunction", "\n".join([
     "scoreboard players add @s rwd_spear_kills 1",
@@ -634,7 +654,6 @@ write_update_simple("shear",   "rwd_shear",   "rwd_shear_last")
 write_update_simple("milk",    "rwd_milk",    "rwd_milk_last")
 write_update_simple("egg",     "rwd_egg",     "rwd_egg_last")
 write_update_simple("bread",   "rwd_bread",   "rwd_bread_last")
-write_update_simple("enchant", "rwd_enchant", "rwd_enchant_last")
 
 # ─── PROGRESS FUNCTIONS ────────────────────────────────────────────────────────
 PROGRESS_COLOR = {
@@ -649,7 +668,6 @@ PROGRESS_COLOR = {
     "bread":   "gold",
     "spear":   "dark_aqua",
     "mace":    "dark_purple",
-    "enchant": "light_purple",
 }
 PROGRESS_LABEL = {
     "logs":    "Chop Logs",
@@ -663,7 +681,6 @@ PROGRESS_LABEL = {
     "bread":   "Bake Bread",
     "spear":   "Spear Kills",
     "mace":    "Mace Kills",
-    "enchant": "Enchanting",
 }
 
 def write_progress(category, total_obj, stage_obj, n_stages, ms):
@@ -691,7 +708,6 @@ write_progress("egg",     "rwd_egg",        "rwd_egg_stage",    20, MILESTONES_E
 write_progress("bread",   "rwd_bread",      "rwd_bread_stage",  20, MILESTONES_BREAD)
 write_progress("spear",   "rwd_spear_kills","rwd_spear_stage",  20, MILESTONES_WEAPON)
 write_progress("mace",    "rwd_mace_kills", "rwd_mace_stage",   20, MILESTONES_WEAPON)
-write_progress("enchant", "rwd_enchant",    "rwd_ench_stage",20, MILESTONES_ENCHANT)
 
 # ─── CHECK FUNCTIONS ───────────────────────────────────────────────────────────
 def write_check(category, total_obj, stage_obj, rewards_list, n_stages, ms):
@@ -717,7 +733,6 @@ write_check("egg",     "rwd_egg",        "rwd_egg_stage",    EGG_REWARDS,       
 write_check("bread",   "rwd_bread",      "rwd_bread_stage",  BREAD_REWARDS,      20, MILESTONES_BREAD)
 write_check("spear",   "rwd_spear_kills","rwd_spear_stage",  SPEAR_KILL_REWARDS, 20, MILESTONES_WEAPON)
 write_check("mace",    "rwd_mace_kills", "rwd_mace_stage",   MACE_KILL_REWARDS,  20, MILESTONES_WEAPON)
-write_check("enchant", "rwd_enchant",    "rwd_ench_stage",ENCHANT_REWARDS,    20, MILESTONES_ENCHANT)
 
 # ─── SILENT INIT FUNCTIONS ─────────────────────────────────────────────────────
 LAST_MAP = {
@@ -730,7 +745,6 @@ LAST_MAP = {
     "rwd_milk":       "rwd_milk_last",
     "rwd_egg":        "rwd_egg_last",
     "rwd_bread":      "rwd_bread_last",
-    "rwd_enchant":    "rwd_enchant_last",
     # weapon kill counters start at 0 — sync their "last" to 0 on init
     "rwd_spear_kills":"rwd_spear_kl",
     "rwd_mace_kills": "rwd_mace_kl",
@@ -764,7 +778,6 @@ write_silent_init("shear",   "rwd_shear",      "rwd_shear_stage",  20, MILESTONE
 write_silent_init("milk",    "rwd_milk",       "rwd_milk_stage",   20, MILESTONES_20)
 write_silent_init("egg",     "rwd_egg",        "rwd_egg_stage",    20, MILESTONES_EGG)
 write_silent_init("bread",   "rwd_bread",      "rwd_bread_stage",  20, MILESTONES_BREAD)
-write_silent_init("enchant", "rwd_enchant",    "rwd_ench_stage",20, MILESTONES_ENCHANT)
 write_silent_init("spear",   "rwd_spear_kills","rwd_spear_stage",  20, MILESTONES_WEAPON)
 write_silent_init("mace",    "rwd_mace_kills", "rwd_mace_stage",   20, MILESTONES_WEAPON)
 
@@ -785,7 +798,6 @@ write("data/rewards/function/do_init.mcfunction", "\n".join([
     "scoreboard players add @s rwd_milk_stage 0",
     "scoreboard players add @s rwd_egg_stage 0",
     "scoreboard players add @s rwd_bread_stage 0",
-    "scoreboard players add @s rwd_ench_stage 0",
     "scoreboard players add @s rwd_spear_stage 0",
     "scoreboard players add @s rwd_mace_stage 0",
     # Weapon kill window objectives
@@ -797,6 +809,10 @@ write("data/rewards/function/do_init.mcfunction", "\n".join([
     "scoreboard players add @s rwd_mace_win 0",
     "scoreboard players add @s rwd_mace_ul 0",
     "scoreboard players add @s rwd_kill_snap 0",
+    # Enchanting mod counters (start fresh — no retroactive book/anvil spam)
+    "scoreboard players add @s rwd_enc_m10 0",
+    "scoreboard players add @s rwd_enc_m50 0",
+    "scoreboard players add @s rwd_enc_delta 0",
     # Silent init: set stage from existing lifetime stats, no items given
     "function rewards:silent_init/logs",
     "function rewards:silent_init/ores",
@@ -807,7 +823,6 @@ write("data/rewards/function/do_init.mcfunction", "\n".join([
     "function rewards:silent_init/milk",
     "function rewards:silent_init/egg",
     "function rewards:silent_init/bread",
-    "function rewards:silent_init/enchant",
     "function rewards:silent_init/spear",
     "function rewards:silent_init/mace",
     "scoreboard players set @s rwd_init 1",
@@ -826,7 +841,6 @@ STAGE_LABELS = {
     "bread":   "Bake Bread",
     "spear":   "Spear Kills",
     "mace":    "Mace Kills",
-    "enchant": "Enchanting",
 }
 
 def write_rewards(category, rewards_list, n_stages, ms):
@@ -842,7 +856,6 @@ def write_rewards(category, rewards_list, n_stages, ms):
         "bread":   "rwd_bread_stage",
         "spear":   "rwd_spear_stage",
         "mace":    "rwd_mace_stage",
-        "enchant": "rwd_ench_stage",
     }[category]
     cat_label = STAGE_LABELS[category]
     for i, reward in enumerate(rewards_list):
@@ -870,7 +883,6 @@ write_rewards("egg",     EGG_REWARDS,        20, MILESTONES_EGG)
 write_rewards("bread",   BREAD_REWARDS,      20, MILESTONES_BREAD)
 write_rewards("spear",   SPEAR_KILL_REWARDS, 20, MILESTONES_WEAPON)
 write_rewards("mace",    MACE_KILL_REWARDS,  20, MILESTONES_WEAPON)
-write_rewards("enchant", ENCHANT_REWARDS,    20, MILESTONES_ENCHANT)
 
 # ─── COUNT FILES ───────────────────────────────────────────────────────────────
 total = 0
