@@ -37,7 +37,8 @@ def item_name(material, enchants, count=1):
     count_str = f" x{count}" if count > 1 else ""
     if not enchants:
         return f"{base}{count_str}"
-    enc_parts = [f"{e.replace('_', ' ').title()} {roman(l)}" for e, l in enchants]
+    # Strip namespace from custom enchantments (e.g. rewards:lightning → Lightning)
+    enc_parts = [f"{e.split(':')[-1].replace('_', ' ').title()} {roman(l)}" for e, l in enchants]
     return f"{base} ({', '.join(enc_parts)}){count_str}"
 
 def give_cmd(material, enchants, count=1):
@@ -138,7 +139,7 @@ SPEAR_KILL_REWARDS = [
     ("minecraft:netherite_spear", [("sharpness",5),("unbreaking",3)]),
     ("minecraft:netherite_spear", [("sharpness",5),("unbreaking",3),("looting",3)]),
     ("minecraft:netherite_spear", [("sharpness",5),("unbreaking",3),("looting",3),("mending",1)]),
-    ("minecraft:netherite_spear", [("sharpness",5),("unbreaking",3),("looting",3),("mending",1),("channeling",1)]),
+    ("minecraft:netherite_spear", [("sharpness",5),("unbreaking",3),("looting",3),("mending",1),("rewards:lightning",1)]),
 ]
 
 # ─── MACES (mace kills — melee window tracking) ──────────────────────────────────
@@ -380,6 +381,39 @@ write("pack.mcmeta", json.dumps({
     }
 }, indent=2))
 
+# ─── CUSTOM ENCHANTMENT: LIGHTNING ────────────────────────────────────────────
+# Summons a lightning bolt at the struck entity on every hit.
+# Uses data-driven enchantment system (26.x / 1.21+).
+write("data/rewards/enchantment/lightning.json", json.dumps({
+    "description": {"text": "Lightning"},
+    "supported_items": [
+        "minecraft:wooden_spear","minecraft:stone_spear","minecraft:iron_spear",
+        "minecraft:golden_spear","minecraft:diamond_spear","minecraft:netherite_spear"
+    ],
+    "primary_items": [
+        "minecraft:wooden_spear","minecraft:stone_spear","minecraft:iron_spear",
+        "minecraft:golden_spear","minecraft:diamond_spear","minecraft:netherite_spear"
+    ],
+    "weight": 1,
+    "max_level": 1,
+    "min_cost": {"base": 30, "per_level_above_first": 0},
+    "max_cost": {"base": 60, "per_level_above_first": 0},
+    "anvil_cost": 6,
+    "effects": {
+        "minecraft:post_attack": [
+            {
+                "enchanted": "attacker",
+                "affected": "victim",
+                "effect": {
+                    "type": "minecraft:summon_entity",
+                    "entity": "minecraft:lightning_bolt",
+                    "join_team": False
+                }
+            }
+        ]
+    }
+}, indent=2))
+
 # ─── LOAD / TICK TAGS ──────────────────────────────────────────────────────────
 write("data/minecraft/tags/function/load.json",
       json.dumps({"values": ["rewards:load"]}, indent=2))
@@ -444,7 +478,8 @@ load_lines += [
     "scoreboard objectives add rwd_dmg_stage dummy",
     "scoreboard objectives add rwd_dirt dummy",
     "scoreboard objectives add rwd_dirt_stage dummy",
-    "scoreboard objectives add rwd_shear minecraft.used:minecraft.shears",
+    "scoreboard objectives remove rwd_shear",
+    "scoreboard objectives add rwd_enchanting minecraft.used:minecraft.shears",
     "scoreboard objectives add rwd_shear_stage dummy",
     "scoreboard objectives add rwd_milk minecraft.used:minecraft.bucket",
     "scoreboard objectives add rwd_milk_stage dummy",
@@ -650,7 +685,7 @@ write_update("ores", ORE_TYPES, lambda b: b.replace("deepslate_","ds_").replace(
 write_update("dirt", DIRT_TYPES, lambda b: f"d_{b[:9]}", "rwd_dirt", "rwd_dirt_last")
 write_update_simple("kills",   "rwd_kills",   "rwd_kill_last")
 write_update_simple("damage",  "rwd_damage",  "rwd_dmg_last")
-write_update_simple("shear",   "rwd_shear",   "rwd_shear_last")
+write_update_simple("shear",   "rwd_enchanting", "rwd_shear_last")
 write_update_simple("milk",    "rwd_milk",    "rwd_milk_last")
 write_update_simple("egg",     "rwd_egg",     "rwd_egg_last")
 write_update_simple("bread",   "rwd_bread",   "rwd_bread_last")
@@ -702,7 +737,7 @@ write_progress("ores",    "rwd_ores",       "rwd_ore_stage",    20, MILESTONES_2
 write_progress("kills",   "rwd_kills",      "rwd_kill_stage",   20, MILESTONES_20)
 write_progress("damage",  "rwd_damage",     "rwd_dmg_stage",    80, MILESTONES_80)
 write_progress("dirt",    "rwd_dirt",       "rwd_dirt_stage",   20, MILESTONES_DIRT)
-write_progress("shear",   "rwd_shear",      "rwd_shear_stage",  20, MILESTONES_20)
+write_progress("shear",   "rwd_enchanting", "rwd_shear_stage",  20, MILESTONES_20)
 write_progress("milk",    "rwd_milk",       "rwd_milk_stage",   20, MILESTONES_20)
 write_progress("egg",     "rwd_egg",        "rwd_egg_stage",    20, MILESTONES_EGG)
 write_progress("bread",   "rwd_bread",      "rwd_bread_stage",  20, MILESTONES_BREAD)
@@ -727,7 +762,7 @@ write_check("ores",    "rwd_ores",       "rwd_ore_stage",    PICK_REWARDS,      
 write_check("kills",   "rwd_kills",      "rwd_kill_stage",   SWORD_REWARDS,      20, MILESTONES_20)
 write_check("damage",  "rwd_damage",     "rwd_dmg_stage",    ARMOR_REWARDS,      80, MILESTONES_80)
 write_check("dirt",    "rwd_dirt",       "rwd_dirt_stage",   SHOVEL_REWARDS,     20, MILESTONES_DIRT)
-write_check("shear",   "rwd_shear",      "rwd_shear_stage",  SHEAR_REWARDS,      20, MILESTONES_20)
+write_check("shear",   "rwd_enchanting", "rwd_shear_stage",  SHEAR_REWARDS,      20, MILESTONES_20)
 write_check("milk",    "rwd_milk",       "rwd_milk_stage",   MILK_REWARDS,       20, MILESTONES_20)
 write_check("egg",     "rwd_egg",        "rwd_egg_stage",    EGG_REWARDS,        20, MILESTONES_EGG)
 write_check("bread",   "rwd_bread",      "rwd_bread_stage",  BREAD_REWARDS,      20, MILESTONES_BREAD)
@@ -741,7 +776,7 @@ LAST_MAP = {
     "rwd_kills":      "rwd_kill_last",
     "rwd_damage":     "rwd_dmg_last",
     "rwd_dirt":       "rwd_dirt_last",
-    "rwd_shear":      "rwd_shear_last",
+    "rwd_enchanting": "rwd_shear_last",
     "rwd_milk":       "rwd_milk_last",
     "rwd_egg":        "rwd_egg_last",
     "rwd_bread":      "rwd_bread_last",
@@ -774,7 +809,7 @@ write_silent_init("kills",   "rwd_kills",      "rwd_kill_stage",   20, MILESTONE
 write_silent_init("damage",  "rwd_damage",     "rwd_dmg_stage",    80, MILESTONES_80)
 write_silent_init("dirt",    "rwd_dirt",       "rwd_dirt_stage",   20, MILESTONES_DIRT,
                   DIRT_TYPES, lambda b: f"d_{b[:9]}")
-write_silent_init("shear",   "rwd_shear",      "rwd_shear_stage",  20, MILESTONES_20)
+write_silent_init("shear",   "rwd_enchanting", "rwd_shear_stage",  20, MILESTONES_20)
 write_silent_init("milk",    "rwd_milk",       "rwd_milk_stage",   20, MILESTONES_20)
 write_silent_init("egg",     "rwd_egg",        "rwd_egg_stage",    20, MILESTONES_EGG)
 write_silent_init("bread",   "rwd_bread",      "rwd_bread_stage",  20, MILESTONES_BREAD)
