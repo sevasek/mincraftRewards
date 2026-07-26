@@ -44,9 +44,18 @@ def item_name(material, enchants, count=1):
     enc_parts = [f"{e.split(':')[-1].replace('_', ' ').title()} {roman(l)}" for e, l in enchants]
     return f"{base} ({', '.join(enc_parts)}){count_str}"
 
-def give_cmd(material, enchants, count=1):
+def give_cmd(material, enchants, count=1, extra_components=""):
     count_str = f" {count}" if count > 1 else ""
-    return f"give @s {material}{enchant_str(enchants)}{count_str}"
+    enc = enchant_str(enchants)
+    if extra_components:
+        # Merge extra components into the same [...] block
+        comp = enc[:-1] + "," + extra_components + "]" if enc else f"[{extra_components}]"
+    else:
+        comp = enc
+    return f"give @s {material}{comp}{count_str}"
+
+# Attack speed component for the endgame spear (adds 6 → total 10, base is 4)
+SPEAR_SPEED = 'attribute_modifiers=[{type:"minecraft:attack_speed",amount:6.0,operation:"add_value",slot:"mainhand",id:"rewards:spear_speed"}]'
 
 
 # ─── AXES (logs) ───────────────────────────────────────────────────────────────
@@ -142,8 +151,8 @@ SPEAR_KILL_REWARDS = [
     ("minecraft:netherite_spear", [("sharpness",5),("unbreaking",3)]),
     ("minecraft:netherite_spear", [("sharpness",5),("unbreaking",3),("looting",3)]),
     ("minecraft:netherite_spear", [("sharpness",5),("unbreaking",3),("looting",3),("mending",1)]),
-    ("minecraft:netherite_spear", [("sharpness",5),("unbreaking",3),("looting",3),("mending",1),("rewards:lightning",1)]),
-    ("minecraft:netherite_spear", [("sharpness",5),("unbreaking",3),("looting",3),("mending",1),("rewards:lightning",1),("rewards:lunge",3)]),
+    ("minecraft:netherite_spear", [("sharpness",5),("unbreaking",3),("looting",3),("mending",1),("rewards:lightning",1)], 1, None, SPEAR_SPEED),
+    ("minecraft:netherite_spear", [("sharpness",5),("unbreaking",3),("looting",3),("mending",1),("rewards:lightning",1),("rewards:lunge",3)], 1, None, SPEAR_SPEED),
 ]
 
 # ─── MACES (mace kills — melee window tracking) ──────────────────────────────────
@@ -999,10 +1008,11 @@ def write_rewards(category, rewards_list, n_stages, ms):
         mat, encs = reward[0], reward[1]
         count = reward[2] if len(reward) > 2 else 1
         display = reward[3] if len(reward) > 3 else None
+        extra = reward[4] if len(reward) > 4 else ""
         stage_num = i + 1
         name = display if display else item_name(mat, encs, count)
         content = "\n".join([
-            give_cmd(mat, encs, count),
+            give_cmd(mat, encs, count, extra),
             f"scoreboard players set @s {stage_obj} {stage_num}",
             f'title @s subtitle {{"text":"⭐ {cat_label} — Level {stage_num}  |  {name}","color":"gold"}}',
             f'tellraw @s [{{"text":"[Rewards] ","color":"gold","bold":true}},{{"text":"You received: ","color":"gray"}},{{"text":"{name}","color":"aqua","bold":true}}]',
