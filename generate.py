@@ -488,11 +488,6 @@ write("data/rewards/enchantment/lunge.json", json.dumps({
                         {
                             "condition": "minecraft:entity_properties",
                             "entity": "this",
-                            "predicate": {"minecraft:flags": {"is_fall_flying": False}}
-                        },
-                        {
-                            "condition": "minecraft:entity_properties",
-                            "entity": "this",
                             "predicate": {"minecraft:flags": {"is_in_water": False}}
                         }
                     ]
