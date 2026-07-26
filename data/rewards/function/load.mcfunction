@@ -118,6 +118,34 @@ scoreboard objectives add rwd_enchant_last dummy
 scoreboard objectives add rwd_spear_kl dummy
 scoreboard objectives add rwd_mace_kl dummy
 
+# Leaderboard trigger objectives (players use /trigger lb_<metric>)
+scoreboard objectives add lb_kills trigger
+scoreboard objectives add lb_spear trigger
+scoreboard objectives add lb_mace trigger
+scoreboard objectives add lb_logs trigger
+scoreboard objectives add lb_ores trigger
+scoreboard objectives add lb_damage trigger
+scoreboard objectives add lb_dirt trigger
+scoreboard objectives add lb_enchant trigger
+scoreboard objectives add lb_milk trigger
+scoreboard objectives add lb_eggs trigger
+scoreboard objectives add lb_bread trigger
+scoreboard objectives add lb_off trigger
+scoreboard objectives add lb_help trigger
+
+# Set sidebar display names
+scoreboard objectives modify rwd_tot_kills displayname [{"text": "Mob Kills", "color": "red", "bold": true}]
+scoreboard objectives modify rwd_spear_kills displayname [{"text": "Spear Kills", "color": "gold", "bold": true}]
+scoreboard objectives modify rwd_mace_kills displayname [{"text": "Mace Kills", "color": "yellow", "bold": true}]
+scoreboard objectives modify rwd_logs displayname [{"text": "Logs Chopped", "color": "green", "bold": true}]
+scoreboard objectives modify rwd_ores displayname [{"text": "Ores Mined", "color": "aqua", "bold": true}]
+scoreboard objectives modify rwd_damage displayname [{"text": "Damage Dealt", "color": "light_purple", "bold": true}]
+scoreboard objectives modify rwd_dirt displayname [{"text": "Dirt Moved", "color": "dark_green", "bold": true}]
+scoreboard objectives modify rwd_enchant displayname [{"text": "Enchants", "color": "light_purple", "bold": true}]
+scoreboard objectives modify rwd_milk displayname [{"text": "Milk Collected", "color": "white", "bold": true}]
+scoreboard objectives modify rwd_egg displayname [{"text": "Eggs Collected", "color": "yellow", "bold": true}]
+scoreboard objectives modify rwd_bread displayname [{"text": "Bread Baked", "color": "gold", "bold": true}]
+
 # Initialisation flag
 scoreboard objectives add rwd_init dummy
 
@@ -133,3 +161,4 @@ tellraw @a [{"text":"        ✦ ","color":"dark_gray"},{"text":"R E W A R D S",
 tellraw @a [{"text":"  ","color":"dark_gray"},{"text":"Chop logs ","color":"green"},{"text":"› ","color":"dark_gray"},{"text":"Mine ores ","color":"aqua"},{"text":"› ","color":"dark_gray"},{"text":"Kill mobs ","color":"red"},{"text":"› ","color":"dark_gray"},{"text":"Take damage ","color":"light_purple"},{"text":"› ","color":"dark_gray"},{"text":"Dig dirt ","color":"yellow"},{"text":"› ","color":"dark_gray"},{"text":"Shear sheep ","color":"white"},{"text":"› ","color":"dark_gray"},{"text":"Milk cows ","color":"dark_green"},{"text":"› ","color":"dark_gray"},{"text":"Throw eggs ","color":"dark_red"},{"text":"› ","color":"dark_gray"},{"text":"Bake bread ","color":"gold"},{"text":"› ","color":"dark_gray"},{"text":"Spear kills ","color":"dark_aqua"},{"text":"› ","color":"dark_gray"},{"text":"Mace kills ","color":"dark_purple"},{"text":"› ","color":"dark_gray"},{"text":"Enchant","color":"light_purple"}]
 tellraw @a [{"text":"  ","color":"dark_gray"},{"text":"Earn better tools & armour as you play.","color":"gray","italic":true}]
 tellraw @a {"text":""}
+scoreboard objectives setdisplay sidebar rwd_tot_kills

@@ -15,3 +15,4 @@ scoreboard players add @s rwd_enc_m50 0
 scoreboard players add @s rwd_enc_m100 0
 scoreboard players add @s rwd_enc_delta 0
 scoreboard players set @s rwd_v2 1
+function rewards:lb/enable_triggers

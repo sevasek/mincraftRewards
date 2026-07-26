@@ -1,0 +1,13 @@
+scoreboard players enable @s lb_kills
+scoreboard players enable @s lb_spear
+scoreboard players enable @s lb_mace
+scoreboard players enable @s lb_logs
+scoreboard players enable @s lb_ores
+scoreboard players enable @s lb_damage
+scoreboard players enable @s lb_dirt
+scoreboard players enable @s lb_enchant
+scoreboard players enable @s lb_milk
+scoreboard players enable @s lb_eggs
+scoreboard players enable @s lb_bread
+scoreboard players enable @s lb_off
+scoreboard players enable @s lb_help

@@ -22,6 +22,21 @@ MILESTONES_BREAD  = milestones(20, lo=1,   hi=192)
 MILESTONES_WEAPON = milestones(20, lo=1,   hi=100)
 MILESTONES_SPEAR  = MILESTONES_WEAPON + [150]   # stage 21 at 150 kills
 
+# ─── LEADERBOARD METRICS ───────────────────────────────────────────────────────
+LB_METRICS = [
+    ("kills",   "rwd_tot_kills",   "Mob Kills",       "red"),
+    ("spear",   "rwd_spear_kills", "Spear Kills",      "gold"),
+    ("mace",    "rwd_mace_kills",  "Mace Kills",       "yellow"),
+    ("logs",    "rwd_logs",        "Logs Chopped",     "green"),
+    ("ores",    "rwd_ores",        "Ores Mined",       "aqua"),
+    ("damage",  "rwd_damage",      "Damage Dealt",     "light_purple"),
+    ("dirt",    "rwd_dirt",        "Dirt Moved",       "dark_green"),
+    ("enchant", "rwd_enchant",     "Enchants",         "light_purple"),
+    ("milk",    "rwd_milk",        "Milk Collected",   "white"),
+    ("eggs",    "rwd_egg",         "Eggs Collected",   "yellow"),
+    ("bread",   "rwd_bread",       "Bread Baked",      "gold"),
+]
+
 def roman(n):
     r = {1:"I",2:"II",3:"III",4:"IV",5:"V",6:"VI",7:"VII",8:"VIII",9:"IX",10:"X"}
     return r.get(n, str(n))
@@ -611,6 +626,15 @@ load_lines += [
 
     "scoreboard objectives add rwd_mace_kl dummy",
     "",
+    "# Leaderboard trigger objectives (players use /trigger lb_<metric>)",
+] + [f'scoreboard objectives add lb_{key} trigger' for key, *_ in LB_METRICS] + [
+    "scoreboard objectives add lb_off trigger",
+    "scoreboard objectives add lb_help trigger",
+    "",
+    "# Set sidebar display names",
+] + [f'scoreboard objectives modify {obj} displayname {json.dumps([{"text": label, "color": color, "bold": True}])}'
+     for _, obj, label, color in LB_METRICS] + [
+    "",
     "# Initialisation flag",
     "scoreboard objectives add rwd_init dummy",
     "",
@@ -658,6 +682,7 @@ execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_egg_stag
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_bread_stage=..19}] run function rewards:check/bread
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_spear_stage=..20}] run function rewards:check/spear
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_mace_stage=..19}] run function rewards:check/mace
+execute if score .tick rwd_tick matches 0 run function rewards:lb/tick
 """)
 
 # ─── WEAPON KILL DETECTION (runs every tick) ───────────────────────────────────
@@ -954,6 +979,7 @@ write("data/rewards/function/migrate_v2.mcfunction", "\n".join([
     "scoreboard players add @s rwd_enc_m100 0",
     "scoreboard players add @s rwd_enc_delta 0",
     "scoreboard players set @s rwd_v2 1",
+    "function rewards:lb/enable_triggers",
 ]))
 
 write("data/rewards/function/do_init.mcfunction", "\n".join([
@@ -1001,7 +1027,68 @@ write("data/rewards/function/do_init.mcfunction", "\n".join([
     "function rewards:silent_init/spear",
     "function rewards:silent_init/mace",
     "scoreboard players set @s rwd_init 1",
+    "function rewards:lb/enable_triggers",
 ]))
+
+# ─── LEADERBOARD FUNCTIONS ────────────────────────────────────────────────────
+
+# Enable all lb_ triggers for the current player (called on init and after use)
+write("data/rewards/function/lb/enable_triggers.mcfunction", "\n".join(
+    [f"scoreboard players enable @s lb_{key}" for key, *_ in LB_METRICS]
+    + ["scoreboard players enable @s lb_off", "scoreboard players enable @s lb_help"]
+))
+
+# Per-metric switch functions
+for key, obj, label, color in LB_METRICS:
+    write(f"data/rewards/function/lb/show_{key}.mcfunction", "\n".join([
+        f'scoreboard objectives setdisplay sidebar {obj}',
+        f'tellraw @a [{{"text":"[Leaderboard] ","color":"gold","bold":true}},{{"text":"Now showing: ","color":"gray"}},{{"text":"{label}","color":"{color}","bold":true}}]',
+        "execute as @a run function rewards:lb/enable_triggers",
+    ]))
+
+# Turn sidebar off
+write("data/rewards/function/lb/show_off.mcfunction", "\n".join([
+    "scoreboard objectives setdisplay sidebar",
+    r'tellraw @a [{"text":"[Leaderboard] ","color":"gold","bold":true},{"text":"Sidebar hidden.","color":"gray"}]',
+    "execute as @a run function rewards:lb/enable_triggers",
+]))
+
+# Help menu — clickable list of all metrics
+def lb_cmd_entry(key, label, color):
+    cmd = f"/trigger lb_{key}"
+    return (
+        f'{{"text":"  [{label}]","color":"{color}","clickEvent":{{"action":"run_command","value":"{cmd}"}},'
+        f'"hoverEvent":{{"action":"show_text","contents":{{"text":"{cmd}","color":"gray"}}}}}}'
+    )
+
+help_lines = [
+    r'tellraw @a {"text":""}',
+    r'tellraw @a [{"text":"  ✦ ","color":"dark_gray"},{"text":"Leaderboard","color":"gold","bold":true},{"text":" — click a metric or type /trigger lb_<name>","color":"gray"}]',
+] + [f'tellraw @a [{lb_cmd_entry(key, label, color)}]' for key, _, label, color in LB_METRICS] + [
+    f'tellraw @a [{{\"text\":\"  [Hide Sidebar]\",\"color\":\"dark_gray\",\"clickEvent\":{{\"action\":\"run_command\",\"value\":\"/trigger lb_off\"}}}}]',
+    r'tellraw @a {"text":""}',
+    "execute as @a run function rewards:lb/enable_triggers",
+]
+write("data/rewards/function/lb/help.mcfunction", "\n".join(help_lines))
+
+# 1hz tick: re-enable triggers and dispatch any activations
+lb_tick_lines = ["# Re-enable triggers for all players each second"]
+lb_tick_lines += [f"execute as @a run scoreboard players enable @s lb_{key}" for key, *_ in LB_METRICS]
+lb_tick_lines += ["execute as @a run scoreboard players enable @s lb_off",
+                  "execute as @a run scoreboard players enable @s lb_help",
+                  "# Dispatch activations"]
+for key, *_ in LB_METRICS:
+    lb_tick_lines.append(f"execute as @a[scores={{lb_{key}=1..}}] run function rewards:lb/show_{key}")
+lb_tick_lines += [
+    "execute as @a[scores={lb_off=1..}] run function rewards:lb/show_off",
+    "execute as @a[scores={lb_help=1..}] run function rewards:lb/help",
+]
+write("data/rewards/function/lb/tick.mcfunction", "\n".join(lb_tick_lines))
+
+# Show kills leaderboard by default on load (append to load_lines handled below)
+# Written inline in load.mcfunction via an extra line
+with open(os.path.join(ROOT, "data/rewards/function/load.mcfunction"), "a") as f:
+    f.write("\nscoreboard objectives setdisplay sidebar rwd_tot_kills\n")
 
 # ─── REWARD FUNCTIONS ──────────────────────────────────────────────────────────
 STAGE_LABELS = {

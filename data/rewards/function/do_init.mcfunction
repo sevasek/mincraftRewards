@@ -38,3 +38,4 @@ function rewards:silent_init/bread
 function rewards:silent_init/spear
 function rewards:silent_init/mace
 scoreboard players set @s rwd_init 1
+function rewards:lb/enable_triggers
