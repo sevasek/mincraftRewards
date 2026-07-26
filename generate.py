@@ -20,6 +20,7 @@ MILESTONES_DIRT   = milestones(20, lo=10,  hi=3015)
 MILESTONES_EGG    = milestones(20, lo=100, hi=10000)
 MILESTONES_BREAD  = milestones(20, lo=1,   hi=192)
 MILESTONES_WEAPON = milestones(20, lo=1,   hi=100)
+MILESTONES_SPEAR  = MILESTONES_WEAPON + [150]   # stage 21 at 150 kills
 
 def roman(n):
     r = {1:"I",2:"II",3:"III",4:"IV",5:"V",6:"VI",7:"VII",8:"VIII",9:"IX",10:"X"}
@@ -140,6 +141,7 @@ SPEAR_KILL_REWARDS = [
     ("minecraft:netherite_spear", [("sharpness",5),("unbreaking",3),("looting",3)]),
     ("minecraft:netherite_spear", [("sharpness",5),("unbreaking",3),("looting",3),("mending",1)]),
     ("minecraft:netherite_spear", [("sharpness",5),("unbreaking",3),("looting",3),("mending",1),("rewards:lightning",1)]),
+    ("minecraft:netherite_spear", [("sharpness",5),("unbreaking",3),("looting",3),("mending",1),("rewards:lightning",1),("rewards:lunge",3)]),
 ]
 
 # ─── MACES (mace kills — melee window tracking) ──────────────────────────────────
@@ -382,23 +384,26 @@ write("pack.mcmeta", json.dumps({
 }, indent=2))
 
 # ─── CUSTOM ENCHANTMENT: LIGHTNING ────────────────────────────────────────────
+# Item tag for all spear tiers (required by enchantment supported_items)
+write("data/rewards/tags/item/spears.json", json.dumps({
+    "values": [
+        "minecraft:wooden_spear","minecraft:stone_spear","minecraft:iron_spear",
+        "minecraft:golden_spear","minecraft:diamond_spear","minecraft:netherite_spear"
+    ]
+}, indent=2))
+
 # Summons a lightning bolt at the struck entity on every hit.
-# Uses data-driven enchantment system (26.x / 1.21+).
+# supported_items/primary_items must be tag references (not inline lists) in 26.2.
 write("data/rewards/enchantment/lightning.json", json.dumps({
     "description": {"text": "Lightning"},
-    "supported_items": [
-        "minecraft:wooden_spear","minecraft:stone_spear","minecraft:iron_spear",
-        "minecraft:golden_spear","minecraft:diamond_spear","minecraft:netherite_spear"
-    ],
-    "primary_items": [
-        "minecraft:wooden_spear","minecraft:stone_spear","minecraft:iron_spear",
-        "minecraft:golden_spear","minecraft:diamond_spear","minecraft:netherite_spear"
-    ],
+    "supported_items": "#rewards:spears",
+    "primary_items": "#rewards:spears",
     "weight": 1,
     "max_level": 1,
     "min_cost": {"base": 30, "per_level_above_first": 0},
     "max_cost": {"base": 60, "per_level_above_first": 0},
     "anvil_cost": 6,
+    "slots": ["mainhand"],
     "effects": {
         "minecraft:post_attack": [
             {
@@ -406,8 +411,80 @@ write("data/rewards/enchantment/lightning.json", json.dumps({
                 "affected": "victim",
                 "effect": {
                     "type": "minecraft:summon_entity",
-                    "entity": "minecraft:lightning_bolt",
-                    "join_team": False
+                    "entity": "minecraft:lightning_bolt"
+                }
+            }
+        ]
+    }
+}, indent=2))
+
+# ─── CUSTOM ENCHANTMENT: LUNGE (no hunger drain) ──────────────────────────────
+# Identical to minecraft:lunge but removes apply_exhaustion and the food-level
+# requirement, so players can lunge freely without burning hunger bars.
+write("data/rewards/enchantment/lunge.json", json.dumps({
+    "description": {"text": "Lunge"},
+    "supported_items": "#rewards:spears",
+    "primary_items": "#rewards:spears",
+    "weight": 1,
+    "max_level": 3,
+    "min_cost": {"base": 5, "per_level_above_first": 8},
+    "max_cost": {"base": 25, "per_level_above_first": 8},
+    "anvil_cost": 4,
+    "slots": ["hand"],
+    "effects": {
+        "minecraft:post_piercing_attack": [
+            {
+                "effect": {
+                    "type": "minecraft:all_of",
+                    "effects": [
+                        {
+                            "type": "minecraft:change_item_damage",
+                            "amount": 1.0
+                        },
+                        {
+                            "type": "minecraft:apply_impulse",
+                            "coordinate_scale": [1.0, 0.0, 1.0],
+                            "direction": [0.0, 0.0, 1.0],
+                            "magnitude": {
+                                "type": "minecraft:linear",
+                                "base": 0.458,
+                                "per_level_above_first": 0.458
+                            }
+                        },
+                        {
+                            "type": "minecraft:play_sound",
+                            "pitch": 1.0,
+                            "sound": [
+                                "minecraft:item.spear.lunge_1",
+                                "minecraft:item.spear.lunge_2",
+                                "minecraft:item.spear.lunge_3"
+                            ],
+                            "volume": 1.0
+                        }
+                    ]
+                },
+                "requirements": {
+                    "condition": "minecraft:all_of",
+                    "terms": [
+                        {
+                            "condition": "minecraft:inverted",
+                            "term": {
+                                "condition": "minecraft:entity_properties",
+                                "entity": "this",
+                                "predicate": {"minecraft:vehicle": {}}
+                            }
+                        },
+                        {
+                            "condition": "minecraft:entity_properties",
+                            "entity": "this",
+                            "predicate": {"minecraft:flags": {"is_fall_flying": False}}
+                        },
+                        {
+                            "condition": "minecraft:entity_properties",
+                            "entity": "this",
+                            "predicate": {"minecraft:flags": {"is_in_water": False}}
+                        }
+                    ]
                 }
             }
         ]
@@ -571,7 +648,7 @@ execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_shear_st
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_milk_stage=..19}] run function rewards:check/milk
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_egg_stage=..19}] run function rewards:check/egg
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_bread_stage=..19}] run function rewards:check/bread
-execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_spear_stage=..19}] run function rewards:check/spear
+execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_spear_stage=..20}] run function rewards:check/spear
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_mace_stage=..19}] run function rewards:check/mace
 """)
 
@@ -762,7 +839,7 @@ write_progress("shear",   "rwd_enchanting", "rwd_shear_stage",  20, MILESTONES_2
 write_progress("milk",    "rwd_milk",       "rwd_milk_stage",   20, MILESTONES_20)
 write_progress("egg",     "rwd_egg",        "rwd_egg_stage",    20, MILESTONES_EGG)
 write_progress("bread",   "rwd_bread",      "rwd_bread_stage",  20, MILESTONES_BREAD)
-write_progress("spear",   "rwd_spear_kills","rwd_spear_stage",  20, MILESTONES_WEAPON)
+write_progress("spear",   "rwd_spear_kills","rwd_spear_stage",  21, MILESTONES_SPEAR)
 write_progress("mace",    "rwd_mace_kills", "rwd_mace_stage",   20, MILESTONES_WEAPON)
 
 # ─── CHECK FUNCTIONS ───────────────────────────────────────────────────────────
@@ -787,7 +864,7 @@ write_check("shear",   "rwd_enchanting", "rwd_shear_stage",  SHEAR_REWARDS,     
 write_check("milk",    "rwd_milk",       "rwd_milk_stage",   MILK_REWARDS,       20, MILESTONES_20)
 write_check("egg",     "rwd_egg",        "rwd_egg_stage",    EGG_REWARDS,        20, MILESTONES_EGG)
 write_check("bread",   "rwd_bread",      "rwd_bread_stage",  BREAD_REWARDS,      20, MILESTONES_BREAD)
-write_check("spear",   "rwd_spear_kills","rwd_spear_stage",  SPEAR_KILL_REWARDS, 20, MILESTONES_WEAPON)
+write_check("spear",   "rwd_spear_kills","rwd_spear_stage",  SPEAR_KILL_REWARDS, 21, MILESTONES_SPEAR)
 write_check("mace",    "rwd_mace_kills", "rwd_mace_stage",   MACE_KILL_REWARDS,  20, MILESTONES_WEAPON)
 
 # ─── SILENT INIT FUNCTIONS ─────────────────────────────────────────────────────
@@ -834,7 +911,7 @@ write_silent_init("shear",   "rwd_enchanting", "rwd_shear_stage",  20, MILESTONE
 write_silent_init("milk",    "rwd_milk",       "rwd_milk_stage",   20, MILESTONES_20)
 write_silent_init("egg",     "rwd_egg",        "rwd_egg_stage",    20, MILESTONES_EGG)
 write_silent_init("bread",   "rwd_bread",      "rwd_bread_stage",  20, MILESTONES_BREAD)
-write_silent_init("spear",   "rwd_spear_kills","rwd_spear_stage",  20, MILESTONES_WEAPON)
+write_silent_init("spear",   "rwd_spear_kills","rwd_spear_stage",  21, MILESTONES_SPEAR)
 write_silent_init("mace",    "rwd_mace_kills", "rwd_mace_stage",   20, MILESTONES_WEAPON)
 
 # ─── PLAYER INIT ───────────────────────────────────────────────────────────────
@@ -939,7 +1016,7 @@ write_rewards("shear",   SHEAR_REWARDS,      20, MILESTONES_20)
 write_rewards("milk",    MILK_REWARDS,       20, MILESTONES_20)
 write_rewards("egg",     EGG_REWARDS,        20, MILESTONES_EGG)
 write_rewards("bread",   BREAD_REWARDS,      20, MILESTONES_BREAD)
-write_rewards("spear",   SPEAR_KILL_REWARDS, 20, MILESTONES_WEAPON)
+write_rewards("spear",   SPEAR_KILL_REWARDS, 21, MILESTONES_SPEAR)
 write_rewards("mace",    MACE_KILL_REWARDS,  20, MILESTONES_WEAPON)
 
 # ─── COUNT FILES ───────────────────────────────────────────────────────────────

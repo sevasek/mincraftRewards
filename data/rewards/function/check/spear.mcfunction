@@ -18,3 +18,4 @@ execute if score @s rwd_spear_stage matches 16 if score @s rwd_spear_kills match
 execute if score @s rwd_spear_stage matches 17 if score @s rwd_spear_kills matches 90.. run function rewards:reward/spear/18
 execute if score @s rwd_spear_stage matches 18 if score @s rwd_spear_kills matches 95.. run function rewards:reward/spear/19
 execute if score @s rwd_spear_stage matches 19 if score @s rwd_spear_kills matches 100.. run function rewards:reward/spear/20
+execute if score @s rwd_spear_stage matches 20 if score @s rwd_spear_kills matches 150.. run function rewards:reward/spear/21

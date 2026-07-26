@@ -18,4 +18,5 @@ execute if score @s rwd_spear_kills matches 84.. run scoreboard players set @s r
 execute if score @s rwd_spear_kills matches 90.. run scoreboard players set @s rwd_spear_stage 18
 execute if score @s rwd_spear_kills matches 95.. run scoreboard players set @s rwd_spear_stage 19
 execute if score @s rwd_spear_kills matches 100.. run scoreboard players set @s rwd_spear_stage 20
+execute if score @s rwd_spear_kills matches 150.. run scoreboard players set @s rwd_spear_stage 21
 scoreboard players operation @s rwd_spear_kl = @s rwd_spear_kills

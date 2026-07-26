@@ -21,5 +21,5 @@ execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_shear_st
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_milk_stage=..19}] run function rewards:check/milk
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_egg_stage=..19}] run function rewards:check/egg
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_bread_stage=..19}] run function rewards:check/bread
-execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_spear_stage=..19}] run function rewards:check/spear
+execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_spear_stage=..20}] run function rewards:check/spear
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_mace_stage=..19}] run function rewards:check/mace
