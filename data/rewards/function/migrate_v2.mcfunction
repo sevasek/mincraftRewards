@@ -1,0 +1,17 @@
+scoreboard players add @s rwd_spear_kills 0
+scoreboard players add @s rwd_spear_stage 0
+scoreboard players add @s rwd_spear_win 0
+scoreboard players add @s rwd_spear_ul 0
+scoreboard players add @s rwd_spear_used 0
+scoreboard players add @s rwd_mace_kills 0
+scoreboard players add @s rwd_mace_stage 0
+scoreboard players add @s rwd_mace_win 0
+scoreboard players add @s rwd_mace_ul 0
+scoreboard players add @s rwd_kill_snap 0
+scoreboard players add @s rwd_kills_delay 0
+scoreboard players add @s rwd_tot_kills 0
+scoreboard players add @s rwd_enc_m10 0
+scoreboard players add @s rwd_enc_m50 0
+scoreboard players add @s rwd_enc_m100 0
+scoreboard players add @s rwd_enc_delta 0
+scoreboard players set @s rwd_v2 1

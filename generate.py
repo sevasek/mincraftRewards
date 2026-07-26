@@ -562,6 +562,7 @@ load_lines += [
     "scoreboard objectives add rwd_ore_stage dummy",
     "scoreboard objectives add rwd_kills minecraft.custom:minecraft.mob_kills",
     "scoreboard objectives add rwd_tot_kills dummy",
+    "scoreboard objectives add rwd_v2 dummy",
     "scoreboard objectives add rwd_kill_stage dummy",
     "scoreboard objectives add rwd_damage minecraft.custom:minecraft.damage_taken",
     "scoreboard objectives add rwd_dmg_stage dummy",
@@ -933,6 +934,31 @@ write_silent_init("mace",    "rwd_mace_kills", "rwd_mace_stage",   20, MILESTONE
 write("data/rewards/function/player_init.mcfunction", "\n".join([
     "scoreboard players add @s rwd_init 0",
     "execute if score @s rwd_init matches 0 run function rewards:do_init",
+    # Migration: runs once for players initialized before v2 objectives were added
+    "scoreboard players add @s rwd_v2 0",
+    "execute if score @s rwd_v2 matches 0 if score @s rwd_init matches 1.. run function rewards:migrate_v2",
+]))
+
+# Migration for players initialized before spear/mace/enchanting track was added.
+# Uses "add 0" which is a no-op if the objective already has a value.
+write("data/rewards/function/migrate_v2.mcfunction", "\n".join([
+    "scoreboard players add @s rwd_spear_kills 0",
+    "scoreboard players add @s rwd_spear_stage 0",
+    "scoreboard players add @s rwd_spear_win 0",
+    "scoreboard players add @s rwd_spear_ul 0",
+    "scoreboard players add @s rwd_spear_used 0",
+    "scoreboard players add @s rwd_mace_kills 0",
+    "scoreboard players add @s rwd_mace_stage 0",
+    "scoreboard players add @s rwd_mace_win 0",
+    "scoreboard players add @s rwd_mace_ul 0",
+    "scoreboard players add @s rwd_kill_snap 0",
+    "scoreboard players add @s rwd_kills_delay 0",
+    "scoreboard players add @s rwd_tot_kills 0",
+    "scoreboard players add @s rwd_enc_m10 0",
+    "scoreboard players add @s rwd_enc_m50 0",
+    "scoreboard players add @s rwd_enc_m100 0",
+    "scoreboard players add @s rwd_enc_delta 0",
+    "scoreboard players set @s rwd_v2 1",
 ]))
 
 write("data/rewards/function/do_init.mcfunction", "\n".join([
