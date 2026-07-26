@@ -443,7 +443,7 @@ write("data/rewards/enchantment/lunge.json", json.dumps({
     "anvil_cost": 4,
     "slots": ["hand"],
     "effects": {
-        "minecraft:post_piercing_attack": [
+        "minecraft:post_attack": [
             {
                 "effect": {
                     "type": "minecraft:all_of",

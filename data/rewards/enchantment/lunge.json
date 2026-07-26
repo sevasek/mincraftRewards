@@ -19,7 +19,7 @@
     "hand"
   ],
   "effects": {
-    "minecraft:post_piercing_attack": [
+    "minecraft:post_attack": [
       {
         "effect": {
           "type": "minecraft:all_of",
