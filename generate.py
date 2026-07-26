@@ -407,8 +407,8 @@ write("data/rewards/tags/item/spears.json", json.dumps({
 # supported_items/primary_items must be tag references (not inline lists) in 26.2.
 write("data/rewards/enchantment/lightning.json", json.dumps({
     "description": {"text": "Lightning"},
-    "supported_items": "#rewards:spears",
-    "primary_items": "#rewards:spears",
+    "supported_items": "#minecraft:enchantable/weapon",
+    "primary_items": "#minecraft:enchantable/weapon",
     "weight": 1,
     "max_level": 1,
     "min_cost": {"base": 30, "per_level_above_first": 0},

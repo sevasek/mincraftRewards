@@ -2,8 +2,8 @@
   "description": {
     "text": "Lightning"
   },
-  "supported_items": "#rewards:spears",
-  "primary_items": "#rewards:spears",
+  "supported_items": "#minecraft:enchantable/weapon",
+  "primary_items": "#minecraft:enchantable/weapon",
   "weight": 1,
   "max_level": 1,
   "min_cost": {
