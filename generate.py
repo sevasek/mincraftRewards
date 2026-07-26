@@ -30,7 +30,9 @@ def enchant_str(enchants):
     """enchants: list of (id, level) e.g. [('sharpness', 5), ('fire_aspect', 2)]"""
     if not enchants:
         return ""
-    parts = ", ".join(f'{e}:{l}' for e, l in enchants)
+    # Quote namespaced IDs that contain a colon (e.g. rewards:lightning)
+    # to avoid ambiguity with the level separator in the give command parser.
+    parts = ", ".join(f'"{e}":{l}' if ":" in e else f'{e}:{l}' for e, l in enchants)
     return f'[enchantments={{{parts}}}]'
 
 def item_name(material, enchants, count=1):
