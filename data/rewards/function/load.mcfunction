@@ -64,6 +64,7 @@ scoreboard objectives add rwd_log_stage dummy
 scoreboard objectives add rwd_ores dummy
 scoreboard objectives add rwd_ore_stage dummy
 scoreboard objectives add rwd_kills minecraft.custom:minecraft.mob_kills
+scoreboard objectives add rwd_tot_kills dummy
 scoreboard objectives add rwd_kill_stage dummy
 scoreboard objectives add rwd_damage minecraft.custom:minecraft.damage_taken
 scoreboard objectives add rwd_dmg_stage dummy

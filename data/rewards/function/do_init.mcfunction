@@ -18,12 +18,16 @@ scoreboard players add @s rwd_mace_win 0
 scoreboard players add @s rwd_mace_ul 0
 scoreboard players add @s rwd_kill_snap 0
 scoreboard players add @s rwd_kills_delay 0
+scoreboard players add @s rwd_tot_kills 0
 scoreboard players add @s rwd_enc_m10 0
 scoreboard players add @s rwd_enc_m50 0
 scoreboard players add @s rwd_enc_m100 0
 scoreboard players add @s rwd_enc_delta 0
 function rewards:silent_init/logs
 function rewards:silent_init/ores
+scoreboard players set @s rwd_tot_kills 0
+scoreboard players operation @s rwd_tot_kills += @s rwd_kills
+scoreboard players operation @s rwd_tot_kills += @s rwd_pkills
 function rewards:silent_init/kills
 function rewards:silent_init/damage
 function rewards:silent_init/dirt

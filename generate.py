@@ -561,6 +561,7 @@ load_lines += [
     "scoreboard objectives add rwd_ores dummy",
     "scoreboard objectives add rwd_ore_stage dummy",
     "scoreboard objectives add rwd_kills minecraft.custom:minecraft.mob_kills",
+    "scoreboard objectives add rwd_tot_kills dummy",
     "scoreboard objectives add rwd_kill_stage dummy",
     "scoreboard objectives add rwd_damage minecraft.custom:minecraft.damage_taken",
     "scoreboard objectives add rwd_dmg_stage dummy",
@@ -787,11 +788,14 @@ def write_update_simple(category, total_obj, last_obj):
 write_update("logs", LOG_TYPES, lambda b: b[:12], "rwd_logs", "rwd_log_last")
 write_update("ores", ORE_TYPES, lambda b: b.replace("deepslate_","ds_").replace("_ore","")[:12], "rwd_ores", "rwd_ore_last")
 write_update("dirt", DIRT_TYPES, lambda b: f"d_{b[:9]}", "rwd_dirt", "rwd_dirt_last")
-# Kills: queue mob-kills progress after weapon kill (delay > 0 means weapon progress was just shown)
+# Kills: combine mob + player kills into rwd_tot_kills, then queue progress display
 # Don't sync rwd_kill_last while delay > 0 so the change is still pending when delay expires
 write("data/rewards/function/update/kills.mcfunction", "\n".join([
-    "execute unless score @s rwd_kills = @s rwd_kill_last if score @s rwd_kills_delay matches 0 run function rewards:progress/kills",
-    "execute unless score @s rwd_kills = @s rwd_kill_last if score @s rwd_kills_delay matches 0 run scoreboard players operation @s rwd_kill_last = @s rwd_kills",
+    "scoreboard players set @s rwd_tot_kills 0",
+    "scoreboard players operation @s rwd_tot_kills += @s rwd_kills",
+    "scoreboard players operation @s rwd_tot_kills += @s rwd_pkills",
+    "execute unless score @s rwd_tot_kills = @s rwd_kill_last if score @s rwd_kills_delay matches 0 run function rewards:progress/kills",
+    "execute unless score @s rwd_tot_kills = @s rwd_kill_last if score @s rwd_kills_delay matches 0 run scoreboard players operation @s rwd_kill_last = @s rwd_tot_kills",
 ]))
 write_update_simple("damage",  "rwd_damage",  "rwd_dmg_last")
 write_update_simple("shear",   "rwd_enchanting", "rwd_shear_last")
@@ -843,7 +847,7 @@ def write_progress(category, total_obj, stage_obj, n_stages, ms):
 
 write_progress("logs",    "rwd_logs",       "rwd_log_stage",    20, MILESTONES_20)
 write_progress("ores",    "rwd_ores",       "rwd_ore_stage",    20, MILESTONES_20)
-write_progress("kills",   "rwd_kills",      "rwd_kill_stage",   20, MILESTONES_20)
+write_progress("kills",   "rwd_tot_kills",  "rwd_kill_stage",   20, MILESTONES_20)
 write_progress("damage",  "rwd_damage",     "rwd_dmg_stage",    80, MILESTONES_80)
 write_progress("dirt",    "rwd_dirt",       "rwd_dirt_stage",   20, MILESTONES_DIRT)
 write_progress("shear",   "rwd_enchanting", "rwd_shear_stage",  20, MILESTONES_20)
@@ -868,7 +872,7 @@ def write_check(category, total_obj, stage_obj, rewards_list, n_stages, ms):
 
 write_check("logs",    "rwd_logs",       "rwd_log_stage",    AXE_REWARDS,        20, MILESTONES_20)
 write_check("ores",    "rwd_ores",       "rwd_ore_stage",    PICK_REWARDS,       20, MILESTONES_20)
-write_check("kills",   "rwd_kills",      "rwd_kill_stage",   SWORD_REWARDS,      20, MILESTONES_20)
+write_check("kills",   "rwd_tot_kills",  "rwd_kill_stage",   SWORD_REWARDS,      20, MILESTONES_20)
 write_check("damage",  "rwd_damage",     "rwd_dmg_stage",    ARMOR_REWARDS,      80, MILESTONES_80)
 write_check("dirt",    "rwd_dirt",       "rwd_dirt_stage",   SHOVEL_REWARDS,     20, MILESTONES_DIRT)
 write_check("shear",   "rwd_enchanting", "rwd_shear_stage",  SHEAR_REWARDS,      20, MILESTONES_20)
@@ -882,7 +886,7 @@ write_check("mace",    "rwd_mace_kills", "rwd_mace_stage",   MACE_KILL_REWARDS, 
 LAST_MAP = {
     "rwd_logs":       "rwd_log_last",
     "rwd_ores":       "rwd_ore_last",
-    "rwd_kills":      "rwd_kill_last",
+    "rwd_tot_kills":  "rwd_kill_last",
     "rwd_damage":     "rwd_dmg_last",
     "rwd_dirt":       "rwd_dirt_last",
     "rwd_enchanting": "rwd_shear_last",
@@ -914,7 +918,7 @@ write_silent_init("logs",    "rwd_logs",       "rwd_log_stage",    20, MILESTONE
                   LOG_TYPES,  lambda b: b[:12])
 write_silent_init("ores",    "rwd_ores",       "rwd_ore_stage",    20, MILESTONES_20,
                   ORE_TYPES,  lambda b: b.replace("deepslate_","ds_").replace("_ore","")[:12])
-write_silent_init("kills",   "rwd_kills",      "rwd_kill_stage",   20, MILESTONES_20)
+write_silent_init("kills",   "rwd_tot_kills",  "rwd_kill_stage",   20, MILESTONES_20)
 write_silent_init("damage",  "rwd_damage",     "rwd_dmg_stage",    80, MILESTONES_80)
 write_silent_init("dirt",    "rwd_dirt",       "rwd_dirt_stage",   20, MILESTONES_DIRT,
                   DIRT_TYPES, lambda b: f"d_{b[:9]}")
@@ -954,6 +958,7 @@ write("data/rewards/function/do_init.mcfunction", "\n".join([
     "scoreboard players add @s rwd_mace_ul 0",
     "scoreboard players add @s rwd_kill_snap 0",
     "scoreboard players add @s rwd_kills_delay 0",
+    "scoreboard players add @s rwd_tot_kills 0",
     # Enchanting mod counters (start fresh — no retroactive book/anvil spam)
     "scoreboard players add @s rwd_enc_m10 0",
     "scoreboard players add @s rwd_enc_m50 0",
@@ -962,6 +967,9 @@ write("data/rewards/function/do_init.mcfunction", "\n".join([
     # Silent init: set stage from existing lifetime stats, no items given
     "function rewards:silent_init/logs",
     "function rewards:silent_init/ores",
+    "scoreboard players set @s rwd_tot_kills 0",
+    "scoreboard players operation @s rwd_tot_kills += @s rwd_kills",
+    "scoreboard players operation @s rwd_tot_kills += @s rwd_pkills",
     "function rewards:silent_init/kills",
     "function rewards:silent_init/damage",
     "function rewards:silent_init/dirt",
