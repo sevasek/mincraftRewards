@@ -118,20 +118,31 @@ scoreboard objectives add rwd_enchant_last dummy
 scoreboard objectives add rwd_spear_kl dummy
 scoreboard objectives add rwd_mace_kl dummy
 
-# Leaderboard trigger objectives (players use /trigger lb_<metric>)
-scoreboard objectives add lb_kills trigger
-scoreboard objectives add lb_spear trigger
-scoreboard objectives add lb_mace trigger
-scoreboard objectives add lb_logs trigger
-scoreboard objectives add lb_ores trigger
-scoreboard objectives add lb_damage trigger
-scoreboard objectives add lb_dirt trigger
-scoreboard objectives add lb_enchant trigger
-scoreboard objectives add lb_milk trigger
-scoreboard objectives add lb_eggs trigger
-scoreboard objectives add lb_bread trigger
-scoreboard objectives add lb_off trigger
-scoreboard objectives add lb_help trigger
+scoreboard objectives add anvil trigger
+scoreboard objectives add smite_sevasek trigger
+scoreboard objectives add smite_sevact trigger
+scoreboard objectives add smite_catmodo trigger
+scoreboard objectives add immortal_sevasek trigger
+scoreboard objectives add immortal_sevact trigger
+scoreboard objectives add immortal_catmodo trigger
+scoreboard objectives add mortal_sevasek trigger
+scoreboard objectives add mortal_sevact trigger
+scoreboard objectives add mortal_catmodo trigger
+
+# Leaderboard trigger objectives (players use /trigger <metric>)
+scoreboard objectives add kills trigger
+scoreboard objectives add spear trigger
+scoreboard objectives add mace trigger
+scoreboard objectives add logs trigger
+scoreboard objectives add ores trigger
+scoreboard objectives add damage trigger
+scoreboard objectives add dirt trigger
+scoreboard objectives add enchant trigger
+scoreboard objectives add milk trigger
+scoreboard objectives add eggs trigger
+scoreboard objectives add bread trigger
+scoreboard objectives add off trigger
+scoreboard objectives add metric trigger
 
 # Set sidebar display names
 scoreboard objectives modify rwd_tot_kills displayname [{"text": "Mob Kills", "color": "red", "bold": true}]

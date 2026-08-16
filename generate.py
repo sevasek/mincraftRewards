@@ -23,6 +23,8 @@ MILESTONES_WEAPON = milestones(20, lo=1,   hi=100)
 MILESTONES_SPEAR  = MILESTONES_WEAPON + [150]   # stage 21 at 150 kills
 
 # ─── LEADERBOARD METRICS ───────────────────────────────────────────────────────
+SMITE_PLAYERS = ["sevasek", "sevact", "catmodo"]
+
 LB_METRICS = [
     ("kills",   "rwd_tot_kills",   "Mob Kills",       "red"),
     ("spear",   "rwd_spear_kills", "Spear Kills",      "gold"),
@@ -626,10 +628,17 @@ load_lines += [
 
     "scoreboard objectives add rwd_mace_kl dummy",
     "",
-    "# Leaderboard trigger objectives (players use /trigger lb_<metric>)",
-] + [f'scoreboard objectives add lb_{key} trigger' for key, *_ in LB_METRICS] + [
-    "scoreboard objectives add lb_off trigger",
-    "scoreboard objectives add lb_help trigger",
+    "scoreboard objectives add anvil trigger",
+] + [f"scoreboard objectives add smite_{p} trigger" for p in SMITE_PLAYERS] + [
+    f"scoreboard objectives add immortal_{p} trigger" for p in SMITE_PLAYERS
+] + [
+    f"scoreboard objectives add mortal_{p} trigger" for p in SMITE_PLAYERS
+] + [
+    "",
+    "# Leaderboard trigger objectives (players use /trigger <metric>)",
+] + [f'scoreboard objectives add {key} trigger' for key, *_ in LB_METRICS] + [
+    "scoreboard objectives add off trigger",
+    "scoreboard objectives add metric trigger",
     "",
     "# Set sidebar display names",
 ] + [f'scoreboard objectives modify {obj} displayname {json.dumps([{"text": label, "color": color, "bold": True}])}'
@@ -982,6 +991,7 @@ write("data/rewards/function/migrate_v2.mcfunction", "\n".join([
     "function rewards:lb/enable_triggers",
 ]))
 
+
 write("data/rewards/function/do_init.mcfunction", "\n".join([
     # Stage objectives
     "scoreboard players add @s rwd_log_stage 0",
@@ -1030,12 +1040,56 @@ write("data/rewards/function/do_init.mcfunction", "\n".join([
     "function rewards:lb/enable_triggers",
 ]))
 
+# ─── ANVIL UTILITY ────────────────────────────────────────────────────────────
+# Place an anvil 1 block in front of the player (local ^ coords), mark it with
+# an invisible marker armor stand for cleanup, then schedule removal.
+write("data/rewards/function/anvil_open.mcfunction", "\n".join([
+    "setblock ~ ~5 ~ minecraft:anvil",
+    "summon minecraft:armor_stand ~ ~5 ~ {Tags:[\"anvil_mrkr\"],Invisible:1b,Marker:1b,NoGravity:1b,Small:1b}",
+    r'title @s actionbar {"text":"Right-click the anvil to use it!","color":"yellow","bold":true}',
+    "schedule function rewards:anvil_cleanup 5s append",
+]))
+
+write("data/rewards/function/anvil_cleanup.mcfunction", "\n".join([
+    "execute as @e[type=minecraft:armor_stand,tag=anvil_mrkr] at @s run setblock ~ ~ ~ minecraft:air",
+    "kill @e[type=minecraft:armor_stand,tag=anvil_mrkr]",
+]))
+
+# ─── IMMORTAL: MAKE /kill BYPASS INVULNERABILITY TAG ─────────────────────────
+# By default minecraft:generic_kill (used by /kill) bypasses Invulnerable:1b.
+# Overriding this tag to exclude generic_kill makes truly invulnerable players
+# immune to /kill. Non-invulnerable players are unaffected — the tag only
+# applies when Invulnerable:1b is set.
+write("data/minecraft/tags/damage_type/bypasses_invulnerability.json", json.dumps({
+    "replace": True,
+    "values": ["minecraft:out_of_world"]
+}, indent=2))
+
+# ─── SMITE FUNCTIONS ─────────────────────────────────────────────────────────
+for _p in SMITE_PLAYERS:
+    write(f"data/rewards/function/smite/{_p}.mcfunction", "\n".join([
+        f"execute as {_p} at @s run summon minecraft:lightning_bolt",
+        f'tellraw @a [{{"text":"⚡ ","color":"yellow"}},{{"text":"{_p}","color":"white","bold":true}},{{"text":" was struck by lightning!","color":"yellow"}}]',
+    ]))
+    write(f"data/rewards/function/immortal/{_p}.mcfunction", "\n".join([
+        f"execute as {_p} run data merge entity @s {{Invulnerable:1b}}",
+        f'tellraw @a [{{"text":"🛡 ","color":"aqua"}},{{"text":"{_p}","color":"white","bold":true}},{{"text":" is now immortal!","color":"aqua"}}]',
+    ]))
+    write(f"data/rewards/function/mortal/{_p}.mcfunction", "\n".join([
+        f"execute as {_p} run data merge entity @s {{Invulnerable:0b}}",
+        f'tellraw @a [{{"text":"💀 ","color":"red"}},{{"text":"{_p}","color":"white","bold":true}},{{"text":" is now mortal!","color":"red"}}]',
+    ]))
+
 # ─── LEADERBOARD FUNCTIONS ────────────────────────────────────────────────────
 
 # Enable all lb_ triggers for the current player (called on init and after use)
 write("data/rewards/function/lb/enable_triggers.mcfunction", "\n".join(
-    [f"scoreboard players enable @s lb_{key}" for key, *_ in LB_METRICS]
-    + ["scoreboard players enable @s lb_off", "scoreboard players enable @s lb_help"]
+    [f"scoreboard players enable @s {key}" for key, *_ in LB_METRICS]
+    + ["scoreboard players enable @s off", "scoreboard players enable @s metric",
+       "scoreboard players enable @s anvil"]
+    + [f"scoreboard players enable @s smite_{p}" for p in SMITE_PLAYERS]
+    + [f"scoreboard players enable @s immortal_{p}" for p in SMITE_PLAYERS]
+    + [f"scoreboard players enable @s mortal_{p}" for p in SMITE_PLAYERS]
 ))
 
 # Per-metric switch functions
@@ -1055,7 +1109,7 @@ write("data/rewards/function/lb/show_off.mcfunction", "\n".join([
 
 # Help menu — clickable list of all metrics
 def lb_cmd_entry(key, label, color):
-    cmd = f"/trigger lb_{key}"
+    cmd = f"/trigger {key}"
     return (
         f'{{"text":"  [{label}]","color":"{color}","clickEvent":{{"action":"run_command","value":"{cmd}"}},'
         f'"hoverEvent":{{"action":"show_text","contents":{{"text":"{cmd}","color":"gray"}}}}}}'
@@ -1063,9 +1117,9 @@ def lb_cmd_entry(key, label, color):
 
 help_lines = [
     r'tellraw @a {"text":""}',
-    r'tellraw @a [{"text":"  ✦ ","color":"dark_gray"},{"text":"Leaderboard","color":"gold","bold":true},{"text":" — click a metric or type /trigger lb_<name>","color":"gray"}]',
+    r'tellraw @a [{"text":"  ✦ ","color":"dark_gray"},{"text":"Leaderboard","color":"gold","bold":true},{"text":" — click a metric or type /trigger <name>","color":"gray"}]',
 ] + [f'tellraw @a [{lb_cmd_entry(key, label, color)}]' for key, _, label, color in LB_METRICS] + [
-    f'tellraw @a [{{\"text\":\"  [Hide Sidebar]\",\"color\":\"dark_gray\",\"clickEvent\":{{\"action\":\"run_command\",\"value\":\"/trigger lb_off\"}}}}]',
+    f'tellraw @a [{{\"text\":\"  [Hide Sidebar]\",\"color\":\"dark_gray\",\"clickEvent\":{{\"action\":\"run_command\",\"value\":\"/trigger off\"}}}}]',
     r'tellraw @a {"text":""}',
     "execute as @a run function rewards:lb/enable_triggers",
 ]
@@ -1073,15 +1127,34 @@ write("data/rewards/function/lb/help.mcfunction", "\n".join(help_lines))
 
 # 1hz tick: re-enable triggers and dispatch any activations
 lb_tick_lines = ["# Re-enable triggers for all players each second"]
-lb_tick_lines += [f"execute as @a run scoreboard players enable @s lb_{key}" for key, *_ in LB_METRICS]
-lb_tick_lines += ["execute as @a run scoreboard players enable @s lb_off",
-                  "execute as @a run scoreboard players enable @s lb_help",
-                  "# Dispatch activations"]
+lb_tick_lines += [f"execute as @a run scoreboard players enable @s {key}" for key, *_ in LB_METRICS]
+lb_tick_lines += ["execute as @a run scoreboard players enable @s off",
+                  "execute as @a run scoreboard players enable @s metric",
+                  "execute as @a run scoreboard players enable @s anvil"]
+lb_tick_lines += [f"execute as @a run scoreboard players enable @s smite_{p}" for p in SMITE_PLAYERS]
+lb_tick_lines += [f"execute as @a run scoreboard players enable @s immortal_{p}" for p in SMITE_PLAYERS]
+lb_tick_lines += [f"execute as @a run scoreboard players enable @s mortal_{p}" for p in SMITE_PLAYERS]
+lb_tick_lines += ["# Dispatch activations"]
 for key, *_ in LB_METRICS:
-    lb_tick_lines.append(f"execute as @a[scores={{lb_{key}=1..}}] run function rewards:lb/show_{key}")
+    lb_tick_lines.append(f"execute as @a[scores={{{key}=1..}}] run function rewards:lb/show_{key}")
 lb_tick_lines += [
-    "execute as @a[scores={lb_off=1..}] run function rewards:lb/show_off",
-    "execute as @a[scores={lb_help=1..}] run function rewards:lb/help",
+    "execute as @a[scores={off=1..}] run function rewards:lb/show_off",
+    "execute as @a[scores={metric=1..}] run function rewards:lb/help",
+    "execute as @a[scores={anvil=1..}] at @s run function rewards:anvil_open",
+] + [f"execute as @a[scores={{smite_{p}=1..}}] run function rewards:smite/{p}" for p in SMITE_PLAYERS] + [
+    f"execute as @a[scores={{immortal_{p}=1..}}] run function rewards:immortal/{p}" for p in SMITE_PLAYERS
+] + [
+    f"execute as @a[scores={{mortal_{p}=1..}}] run function rewards:mortal/{p}" for p in SMITE_PLAYERS
+] + [
+    "# Reset all trigger scores to 0 to prevent re-firing next tick",
+] + [f"execute as @a run scoreboard players set @s {key} 0" for key, *_ in LB_METRICS] + [
+    "execute as @a run scoreboard players set @s off 0",
+    "execute as @a run scoreboard players set @s metric 0",
+    "execute as @a run scoreboard players set @s anvil 0",
+] + [f"execute as @a run scoreboard players set @s smite_{p} 0" for p in SMITE_PLAYERS] + [
+    f"execute as @a run scoreboard players set @s immortal_{p} 0" for p in SMITE_PLAYERS
+] + [
+    f"execute as @a run scoreboard players set @s mortal_{p} 0" for p in SMITE_PLAYERS
 ]
 write("data/rewards/function/lb/tick.mcfunction", "\n".join(lb_tick_lines))
 

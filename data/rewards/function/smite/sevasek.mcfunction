@@ -1,0 +1,2 @@
+execute as sevasek at @s run summon minecraft:lightning_bolt
+tellraw @a [{"text":"⚡ ","color":"yellow"},{"text":"sevasek","color":"white","bold":true},{"text":" was struck by lightning!","color":"yellow"}]

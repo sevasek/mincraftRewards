@@ -1,0 +1,2 @@
+execute as catmodo at @s run summon minecraft:lightning_bolt
+tellraw @a [{"text":"⚡ ","color":"yellow"},{"text":"catmodo","color":"white","bold":true},{"text":" was struck by lightning!","color":"yellow"}]
