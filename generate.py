@@ -3,7 +3,7 @@
 
 import os, json
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.environ.get("REWARDS_GENERATE_ROOT") or os.path.dirname(os.path.abspath(__file__))
 
 def write(path, content):
     full = os.path.join(ROOT, path)
