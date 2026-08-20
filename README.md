@@ -20,6 +20,39 @@ Rewards are given automatically when a milestone is crossed. A title and chat me
 
 ---
 
+## Leaderboard & Triggers
+
+Any player can switch what the whole server's **sidebar** displays with `/trigger <metric>`:
+
+| Command | Shows |
+|---|---|
+| `/trigger kills` | Mob Kills |
+| `/trigger spear` | Spear Kills |
+| `/trigger mace` | Mace Kills |
+| `/trigger logs` | Logs Chopped |
+| `/trigger ores` | Ores Mined |
+| `/trigger damage` | Damage Dealt |
+| `/trigger dirt` | Dirt Moved |
+| `/trigger enchant` | Enchants |
+| `/trigger milk` | Milk Collected |
+| `/trigger eggs` | Eggs Collected |
+| `/trigger bread` | Bread Baked |
+| `/trigger off` | Hides the sidebar |
+| `/trigger metric` | Posts a clickable menu of every command above |
+
+The sidebar is server-wide (one display for everyone), so switching it affects what every player sees. Every trigger re-enables itself automatically each second, so it can always be run again.
+
+**Other triggers:**
+
+- `/trigger anvil` — spawns a temporary anvil in front of you (auto-removed after 5 seconds).
+- `/trigger smite_<player>` — strikes `<player>` with lightning. Available for `sevasek`, `sevact`, `catmodo`.
+- `/trigger immortal_<player>` — makes `<player>` immune to `/kill` (sets `Invulnerable:1b`).
+- `/trigger mortal_<player>` — reverses `immortal_<player>` (sets `Invulnerable:0b`).
+
+The set of leaderboard metrics and the smite/immortal/mortal player list are defined in `generate.py` (`LB_METRICS` and `SMITE_PLAYERS`) — regenerate after editing either.
+
+---
+
 ## Milestones
 
 All systems use 20 or 80 evenly spaced milestones between a score of **10** and **500**.
