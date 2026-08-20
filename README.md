@@ -1,6 +1,6 @@
 # Rewards
 
-A vanilla Minecraft datapack for **Minecraft 26.1.2** (data pack format 101) that rewards players with progressively better tools and armour as they play naturally — chop logs, mine ores, kill mobs, take damage, and dig dirt.
+A vanilla Minecraft datapack for **Minecraft 26.2** (data pack format 107) that rewards players with progressively better tools, weapons, and armour as they play naturally — chop logs, mine ores, kill mobs, take damage, dig dirt, shear sheep, milk cows, throw eggs, and bake bread.
 
 No mods. No plugins. Server-side only — clients need nothing installed.
 
@@ -15,22 +15,77 @@ No mods. No plugins. Server-side only — clients need nothing installed.
 | Killing mobs | Mob kills | 20 | Netherite Sword — Sharpness V, Fire Aspect II, Knockback II, Looting III, Unbreaking III, Sweeping Edge III |
 | Taking damage | Damage taken | 80 | Full Netherite armour set — Protection IV, Unbreaking III, Mending + slot bonuses |
 | Digging dirt & sand | Dirt-type blocks broken | 20 | Netherite Shovel — Efficiency V, Unbreaking III |
+| Using shears | Shears used | 20 | Shears — Efficiency V, Unbreaking III, Mending I |
+| Milking (bucket use) | Buckets used | 20 | Wither Rose |
+| Throwing eggs | Eggs used | 20 | Allay Spawn Egg x4 |
+| Baking bread | Bread crafted | 20 | Enchanted Golden Apple |
+| Landing spear kills | Spear kills (window-tracked) | 21 | Netherite Spear — Sharpness V, Unbreaking III, Looting III, Mending I, Lightning I, Lunge III |
+| Landing mace kills | Mace kills (window-tracked) | 20 | Elytra |
 
 Rewards are given automatically when a milestone is crossed. A title and chat message announce each stage.
+
+> The "Milking" track fires on any empty bucket use (`minecraft.used:minecraft.bucket`), not exclusively milking a cow. "Using shears" fires on any shears use, not exclusively shearing sheep.
+
+---
+
+## Leaderboard & Triggers
+
+Any player can switch what the whole server's **sidebar** displays with `/trigger <metric>`:
+
+| Command | Shows |
+|---|---|
+| `/trigger kills` | Mob Kills |
+| `/trigger spear` | Spear Kills |
+| `/trigger mace` | Mace Kills |
+| `/trigger logs` | Logs Chopped |
+| `/trigger ores` | Ores Mined |
+| `/trigger damage` | Damage Dealt |
+| `/trigger dirt` | Dirt Moved |
+| `/trigger enchant` | Enchants |
+| `/trigger milk` | Milk Collected |
+| `/trigger eggs` | Eggs Collected |
+| `/trigger bread` | Bread Baked |
+| `/trigger off` | Hides the sidebar |
+| `/trigger metric` | Posts a clickable menu of every command above |
+
+The sidebar is server-wide (one display for everyone), so switching it affects what every player sees. Every trigger re-enables itself automatically each second, so it can always be run again.
+
+**Other triggers:**
+
+- `/trigger anvil` — spawns a temporary anvil in front of you (auto-removed after 5 seconds).
+- `/trigger smite_<player>` — strikes `<player>` with lightning. Available for `sevasek`, `sevact`, `catmodo`.
+- `/trigger immortal_<player>` — makes `<player>` immune to `/kill` (sets `Invulnerable:1b`).
+- `/trigger mortal_<player>` — reverses `immortal_<player>` (sets `Invulnerable:0b`).
+
+The set of leaderboard metrics and the smite/immortal/mortal player list are defined in `generate.py` (`LB_METRICS` and `SMITE_PLAYERS`) — regenerate after editing either.
 
 ---
 
 ## Milestones
 
-All systems use 20 or 80 evenly spaced milestones between a score of **10** and **500**.
+Each system uses its own evenly-spaced milestone range, defined by `MILESTONES_*` in `generate.py`.
 
-**20-stage milestones (logs, ores, kills, dirt):**
-10, 36, 62, 87, 113, 139, 165, 190, 216, 242, 268, 294, 319, 345, 371, 397, 423, 448, 474, 500
+**20-stage milestones (logs, ores, kills, shear, milk) — 10 to 1500:**
+10, 88, 167, 245, 324, 402, 481, 559, 637, 716, 794, 873, 951, 1029, 1108, 1186, 1265, 1343, 1422, 1500
 
-**80-stage milestones (damage):**
-10, 16, 22, 29, 35, 41, 47, 53 ... evenly spaced to 500
+**80-stage milestones (damage) — 10 to 15000:**
+10, 200, 389, 579 ... evenly spaced to 15000
 
-> Damage is tracked via `minecraft.custom:minecraft.damage_taken`, which counts in units of ½ a heart. 500 score ≈ 250 hearts of total damage received over a session.
+> Damage is tracked via `minecraft.custom:minecraft.damage_taken`, which counts in units of ½ a heart. 15000 score ≈ 7500 hearts of total damage received over a session.
+
+**20-stage milestones (dirt) — 10 to 3015:**
+10, 168, 326, 484, 643, 801, 959, 1117, 1275, 1433, 1592, 1750, 1908, 2066, 2224, 2382, 2541, 2699, 2857, 3015
+
+**20-stage milestones (egg) — 100 to 10000:**
+100, 621, 1142, 1663, 2184, 2705, 3226, 3747, 4268, 4789, 5311, 5832, 6353, 6874, 7395, 7916, 8437, 8958, 9479, 10000
+
+**20-stage milestones (bread) — 1 to 192:**
+1, 11, 21, 31, 41, 51, 61, 71, 81, 91, 102, 112, 122, 132, 142, 152, 162, 172, 182, 192
+
+**20-stage milestones (mace, and the first 20 spear stages) — 1 to 100:**
+1, 6, 11, 17, 22, 27, 32, 37, 43, 48, 53, 58, 64, 69, 74, 79, 84, 90, 95, 100
+
+> Spear adds a 21st stage at **150 kills**, beyond the 20-stage weapon range above.
 
 ---
 
@@ -178,6 +233,6 @@ Each group of 4 stages gives one piece: boots, helmet, leggings, chestplate — 
 
 ## Compatibility
 
-- **Minecraft:** 26.1.2 (data pack format 101)
+- **Minecraft:** 26.2 (data pack format 107)
 - **Server type:** Vanilla (no mods or plugins required)
 - **Client:** Any — clients do not need to install anything
