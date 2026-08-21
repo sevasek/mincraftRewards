@@ -57,6 +57,24 @@ scoreboard objectives add st_iron_sp minecraft.used:minecraft.iron_spear
 scoreboard objectives add st_golden_sp minecraft.used:minecraft.golden_spear
 scoreboard objectives add st_diamon_sp minecraft.used:minecraft.diamond_spear
 scoreboard objectives add st_nether_sp minecraft.used:minecraft.netherite_spear
+scoreboard objectives add st_t_coast minecraft.used:minecraft.coast_armor_trim_smithing_template
+scoreboard objectives add st_t_dune minecraft.used:minecraft.dune_armor_trim_smithing_template
+scoreboard objectives add st_t_eye minecraft.used:minecraft.eye_armor_trim_smithing_template
+scoreboard objectives add st_t_flow minecraft.used:minecraft.flow_armor_trim_smithing_template
+scoreboard objectives add st_t_host minecraft.used:minecraft.host_armor_trim_smithing_template
+scoreboard objectives add st_t_raiser minecraft.used:minecraft.raiser_armor_trim_smithing_template
+scoreboard objectives add st_t_rib minecraft.used:minecraft.rib_armor_trim_smithing_template
+scoreboard objectives add st_t_sentry minecraft.used:minecraft.sentry_armor_trim_smithing_template
+scoreboard objectives add st_t_shaper minecraft.used:minecraft.shaper_armor_trim_smithing_template
+scoreboard objectives add st_t_silence minecraft.used:minecraft.silence_armor_trim_smithing_template
+scoreboard objectives add st_t_snout minecraft.used:minecraft.snout_armor_trim_smithing_template
+scoreboard objectives add st_t_spire minecraft.used:minecraft.spire_armor_trim_smithing_template
+scoreboard objectives add st_t_tide minecraft.used:minecraft.tide_armor_trim_smithing_template
+scoreboard objectives add st_t_vex minecraft.used:minecraft.vex_armor_trim_smithing_template
+scoreboard objectives add st_t_ward minecraft.used:minecraft.ward_armor_trim_smithing_template
+scoreboard objectives add st_t_wayfindr minecraft.used:minecraft.wayfinder_armor_trim_smithing_template
+scoreboard objectives add st_t_wild minecraft.used:minecraft.wild_armor_trim_smithing_template
+scoreboard objectives add st_t_bolt minecraft.used:minecraft.bolt_armor_trim_smithing_template
 
 # Running totals and stages
 scoreboard objectives add rwd_logs dummy
@@ -118,6 +136,28 @@ scoreboard objectives add rwd_enchant_last dummy
 scoreboard objectives add rwd_spear_kl dummy
 scoreboard objectives add rwd_mace_kl dummy
 
+# Armour trim tracking (v3 migration)
+scoreboard objectives add rwd_v3 dummy
+scoreboard objectives add rwd_trims dummy
+scoreboard objectives add rwd_t_coast_l dummy
+scoreboard objectives add rwd_t_dune_l dummy
+scoreboard objectives add rwd_t_eye_l dummy
+scoreboard objectives add rwd_t_flow_l dummy
+scoreboard objectives add rwd_t_host_l dummy
+scoreboard objectives add rwd_t_raiser_l dummy
+scoreboard objectives add rwd_t_rib_l dummy
+scoreboard objectives add rwd_t_sentry_l dummy
+scoreboard objectives add rwd_t_shaper_l dummy
+scoreboard objectives add rwd_t_silence_l dummy
+scoreboard objectives add rwd_t_snout_l dummy
+scoreboard objectives add rwd_t_spire_l dummy
+scoreboard objectives add rwd_t_tide_l dummy
+scoreboard objectives add rwd_t_vex_l dummy
+scoreboard objectives add rwd_t_ward_l dummy
+scoreboard objectives add rwd_t_wayfindr_l dummy
+scoreboard objectives add rwd_t_wild_l dummy
+scoreboard objectives add rwd_t_bolt_l dummy
+
 scoreboard objectives add anvil trigger
 scoreboard objectives add smite_sevasek trigger
 scoreboard objectives add smite_sevact trigger
@@ -141,6 +181,7 @@ scoreboard objectives add enchant trigger
 scoreboard objectives add milk trigger
 scoreboard objectives add eggs trigger
 scoreboard objectives add bread trigger
+scoreboard objectives add trims trigger
 scoreboard objectives add off trigger
 scoreboard objectives add metric trigger
 
@@ -156,6 +197,7 @@ scoreboard objectives modify rwd_enchant displayname [{"text": "Enchants", "colo
 scoreboard objectives modify rwd_milk displayname [{"text": "Milk Collected", "color": "white", "bold": true}]
 scoreboard objectives modify rwd_egg displayname [{"text": "Eggs Collected", "color": "yellow", "bold": true}]
 scoreboard objectives modify rwd_bread displayname [{"text": "Bread Baked", "color": "gold", "bold": true}]
+scoreboard objectives modify rwd_trims displayname [{"text": "Armour Trims", "color": "dark_aqua", "bold": true}]
 
 # Initialisation flag
 scoreboard objectives add rwd_init dummy
