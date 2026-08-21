@@ -23,6 +23,8 @@ scoreboard players add @s rwd_enc_m10 0
 scoreboard players add @s rwd_enc_m50 0
 scoreboard players add @s rwd_enc_m100 0
 scoreboard players add @s rwd_enc_delta 0
+scoreboard players add @s rwd_grapple 0
+scoreboard players operation @s rwd_grapple_last = @s rwd_grapple
 function rewards:silent_init/logs
 function rewards:silent_init/ores
 scoreboard players set @s rwd_tot_kills 0

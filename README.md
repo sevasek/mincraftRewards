@@ -205,6 +205,17 @@ Each group of 4 stages gives one piece: boots, helmet, leggings, chestplate — 
 
 ---
 
+## Admin/Creative Extras
+
+Two items aren't earned through progression — an operator hands them out directly via `/function`:
+
+| Command | Gives |
+|---|---|
+| `/function rewards:give/grappling_hook` | Grappling Hook (carrot on a stick) — right-click to launch 20 blocks forward. Creative-only, no survival recipe. |
+| `/function rewards:give/windburst_sword` | Enchanted book with **Windburst III** — every sword hit applies an upward impulse, letting the wielder self-launch on demand. |
+
+---
+
 ## Installation
 
 1. Copy the `Rewards` folder into your world's `datapacks` directory:
