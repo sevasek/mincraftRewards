@@ -1,0 +1,2 @@
+give @s minecraft:carrot_on_a_stick[minecraft:custom_data={grapple_hook:1b},minecraft:item_name='{"text":"Grappling Hook","color":"aqua","italic":false}',minecraft:lore=['{"text":"Right-click to grapple forward","color":"gray","italic":true}','{"text":"Creative-only","color":"dark_red","italic":true}'],minecraft:enchantment_glint_override=true]
+tellraw @s [{"text":"[Rewards] ","color":"gold","bold":true},{"text":"You received: ","color":"gray"},{"text":"Grappling Hook","color":"aqua","bold":true}]

@@ -514,6 +514,57 @@ write("data/rewards/enchantment/lunge.json", json.dumps({
     }
 }, indent=2))
 
+# ─── CUSTOM ENCHANTMENT: WINDBURST (sword, no fall required) ─────────────────
+# Applies an upward impulse to the attacker on every sword hit — simulates
+# Wind Burst III without needing to fall first. Max level 3; magnitude scales
+# from 1.0 (I) to 3.0 (III), equivalent to a Wind Burst III smash launch.
+write("data/rewards/enchantment/windburst.json", json.dumps({
+    "description": {"text": "Windburst"},
+    "supported_items": "#minecraft:enchantable/sword",
+    "primary_items": "#minecraft:enchantable/sword",
+    "weight": 1,
+    "max_level": 3,
+    "min_cost": {"base": 30, "per_level_above_first": 10},
+    "max_cost": {"base": 60, "per_level_above_first": 10},
+    "anvil_cost": 8,
+    "slots": ["mainhand"],
+    "effects": {
+        "minecraft:post_attack": [
+            {
+                "enchanted": "attacker",
+                "affected": "attacker",
+                "effect": {
+                    "type": "minecraft:all_of",
+                    "effects": [
+                        {
+                            "type": "minecraft:apply_impulse",
+                            "coordinate_scale": [0.0, 0.0, 0.0],
+                            "direction": [0.0, 1.0, 0.0],
+                            "magnitude": {
+                                "type": "minecraft:linear",
+                                "base": 1.0,
+                                "per_level_above_first": 1.0
+                            }
+                        },
+                        {
+                            "type": "minecraft:play_sound",
+                            "pitch": 1.0,
+                            "sound": "minecraft:block.wind_charge.burst",
+                            "volume": 1.0
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}, indent=2))
+
+# Give function: enchanted book with Windburst III (apply to any sword at anvil)
+write("data/rewards/function/give/windburst_sword.mcfunction", "\n".join([
+    'give @s minecraft:enchanted_book[stored_enchantments={"rewards:windburst":3}]',
+    r'tellraw @s [{"text":"[Rewards] ","color":"gold","bold":true},{"text":"You received: ","color":"gray"},{"text":"Windburst III (Book)","color":"aqua","bold":true}]',
+]))
+
 # ─── LOAD / TICK TAGS ──────────────────────────────────────────────────────────
 write("data/minecraft/tags/function/load.json",
       json.dumps({"values": ["rewards:load"]}, indent=2))
@@ -627,6 +678,8 @@ load_lines += [
     "scoreboard objectives add rwd_spear_kl dummy",
 
     "scoreboard objectives add rwd_mace_kl dummy",
+    "scoreboard objectives add rwd_grapple minecraft.used:minecraft.carrot_on_a_stick",
+    "scoreboard objectives add rwd_grapple_last dummy",
     "",
     "scoreboard objectives add anvil trigger",
 ] + [f"scoreboard objectives add smite_{p} trigger" for p in SMITE_PLAYERS] + [
@@ -669,6 +722,8 @@ write("data/rewards/function/tick.mcfunction", """\
 execute as @a run function rewards:player_init
 execute as @a run function rewards:weapon_kill_detect
 execute as @a run function rewards:enchant_check
+execute as @a unless score @s rwd_grapple = @s rwd_grapple_last if entity @s[nbt={SelectedItem:{id:"minecraft:carrot_on_a_stick",components:{"minecraft:custom_data":{grapple_hook:1b}}}}] at @s anchored eyes run function rewards:grapple_launch
+execute as @a run scoreboard players operation @s rwd_grapple_last = @s rwd_grapple
 scoreboard players add .tick rwd_tick 1
 execute if score .tick rwd_tick matches 20.. run scoreboard players set .tick rwd_tick 0
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_log_stage=..19}] at @s run function rewards:update/logs
@@ -1021,6 +1076,8 @@ write("data/rewards/function/do_init.mcfunction", "\n".join([
     "scoreboard players add @s rwd_enc_m50 0",
     "scoreboard players add @s rwd_enc_m100 0",
     "scoreboard players add @s rwd_enc_delta 0",
+    "scoreboard players add @s rwd_grapple 0",
+    "scoreboard players operation @s rwd_grapple_last = @s rwd_grapple",
     # Silent init: set stage from existing lifetime stats, no items given
     "function rewards:silent_init/logs",
     "function rewards:silent_init/ores",
@@ -1064,6 +1121,24 @@ write("data/minecraft/tags/damage_type/bypasses_invulnerability.json", json.dump
     "replace": True,
     "values": ["minecraft:out_of_world"]
 }, indent=2))
+
+# ─── GRAPPLING HOOK ──────────────────────────────────────────────────────────
+# Creative-only item: carrot_on_a_stick with custom_data={grapple_hook:1b}.
+# On right-click: teleports player 20 blocks in their looking direction.
+# No survival crafting recipe — only distributed via /function rewards:give/grappling_hook.
+write("data/rewards/function/grapple_launch.mcfunction", "\n".join([
+    "tp @s ^ ^ ^20",
+    "playsound minecraft:entity.ender_pearl.throw player @s ~ ~ ~ 1.0 1.2",
+    r'title @s actionbar {"text":"⬟ Grapple!","color":"aqua","bold":true}',
+]))
+write("data/rewards/function/give/grappling_hook.mcfunction", "\n".join([
+    "give @s minecraft:carrot_on_a_stick"
+    "[minecraft:custom_data={grapple_hook:1b},"
+    r"""minecraft:item_name='{"text":"Grappling Hook","color":"aqua","italic":false}',"""
+    r"""minecraft:lore=['{"text":"Right-click to grapple forward","color":"gray","italic":true}','{"text":"Creative-only","color":"dark_red","italic":true}'],"""
+    "minecraft:enchantment_glint_override=true]",
+    r'tellraw @s [{"text":"[Rewards] ","color":"gold","bold":true},{"text":"You received: ","color":"gray"},{"text":"Grappling Hook","color":"aqua","bold":true}]',
+]))
 
 # ─── SMITE FUNCTIONS ─────────────────────────────────────────────────────────
 for _p in SMITE_PLAYERS:

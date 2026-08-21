@@ -1,6 +1,8 @@
 execute as @a run function rewards:player_init
 execute as @a run function rewards:weapon_kill_detect
 execute as @a run function rewards:enchant_check
+execute as @a unless score @s rwd_grapple = @s rwd_grapple_last if entity @s[nbt={SelectedItem:{id:"minecraft:carrot_on_a_stick",components:{"minecraft:custom_data":{grapple_hook:1b}}}}] at @s anchored eyes run function rewards:grapple_launch
+execute as @a run scoreboard players operation @s rwd_grapple_last = @s rwd_grapple
 scoreboard players add .tick rwd_tick 1
 execute if score .tick rwd_tick matches 20.. run scoreboard players set .tick rwd_tick 0
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_log_stage=..19}] at @s run function rewards:update/logs

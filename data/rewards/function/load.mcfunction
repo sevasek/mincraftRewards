@@ -117,6 +117,8 @@ scoreboard objectives add rwd_bread_last dummy
 scoreboard objectives add rwd_enchant_last dummy
 scoreboard objectives add rwd_spear_kl dummy
 scoreboard objectives add rwd_mace_kl dummy
+scoreboard objectives add rwd_grapple minecraft.used:minecraft.carrot_on_a_stick
+scoreboard objectives add rwd_grapple_last dummy
 
 scoreboard objectives add anvil trigger
 scoreboard objectives add smite_sevasek trigger

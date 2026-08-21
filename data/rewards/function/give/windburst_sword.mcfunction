@@ -1,0 +1,2 @@
+give @s minecraft:enchanted_book[stored_enchantments={"rewards:windburst":3}]
+tellraw @s [{"text":"[Rewards] ","color":"gold","bold":true},{"text":"You received: ","color":"gray"},{"text":"Windburst III (Book)","color":"aqua","bold":true}]
