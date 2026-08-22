@@ -10,6 +10,7 @@ execute as @a run scoreboard players enable @s enchant
 execute as @a run scoreboard players enable @s milk
 execute as @a run scoreboard players enable @s eggs
 execute as @a run scoreboard players enable @s bread
+execute as @a run scoreboard players enable @s trims
 execute as @a run scoreboard players enable @s off
 execute as @a run scoreboard players enable @s metric
 execute as @a run scoreboard players enable @s anvil
@@ -34,6 +35,7 @@ execute as @a[scores={enchant=1..}] run function rewards:lb/show_enchant
 execute as @a[scores={milk=1..}] run function rewards:lb/show_milk
 execute as @a[scores={eggs=1..}] run function rewards:lb/show_eggs
 execute as @a[scores={bread=1..}] run function rewards:lb/show_bread
+execute as @a[scores={trims=1..}] run function rewards:lb/show_trims
 execute as @a[scores={off=1..}] run function rewards:lb/show_off
 execute as @a[scores={metric=1..}] run function rewards:lb/help
 execute as @a[scores={anvil=1..}] at @s run function rewards:anvil_open
@@ -58,6 +60,7 @@ execute as @a run scoreboard players set @s enchant 0
 execute as @a run scoreboard players set @s milk 0
 execute as @a run scoreboard players set @s eggs 0
 execute as @a run scoreboard players set @s bread 0
+execute as @a run scoreboard players set @s trims 0
 execute as @a run scoreboard players set @s off 0
 execute as @a run scoreboard players set @s metric 0
 execute as @a run scoreboard players set @s anvil 0

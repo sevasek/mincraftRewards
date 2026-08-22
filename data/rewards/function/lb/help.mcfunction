@@ -11,6 +11,7 @@ tellraw @a [{"text":"  [Enchants]","color":"light_purple","clickEvent":{"action"
 tellraw @a [{"text":"  [Milk Collected]","color":"white","clickEvent":{"action":"run_command","value":"/trigger milk"},"hoverEvent":{"action":"show_text","contents":{"text":"/trigger milk","color":"gray"}}}]
 tellraw @a [{"text":"  [Eggs Collected]","color":"yellow","clickEvent":{"action":"run_command","value":"/trigger eggs"},"hoverEvent":{"action":"show_text","contents":{"text":"/trigger eggs","color":"gray"}}}]
 tellraw @a [{"text":"  [Bread Baked]","color":"gold","clickEvent":{"action":"run_command","value":"/trigger bread"},"hoverEvent":{"action":"show_text","contents":{"text":"/trigger bread","color":"gray"}}}]
+tellraw @a [{"text":"  [Armour Trims]","color":"dark_aqua","clickEvent":{"action":"run_command","value":"/trigger trims"},"hoverEvent":{"action":"show_text","contents":{"text":"/trigger trims","color":"gray"}}}]
 tellraw @a [{"text":"  [Hide Sidebar]","color":"dark_gray","clickEvent":{"action":"run_command","value":"/trigger off"}}]
 tellraw @a {"text":""}
 execute as @a run function rewards:lb/enable_triggers

@@ -9,6 +9,7 @@ scoreboard players enable @s enchant
 scoreboard players enable @s milk
 scoreboard players enable @s eggs
 scoreboard players enable @s bread
+scoreboard players enable @s trims
 scoreboard players enable @s off
 scoreboard players enable @s metric
 scoreboard players enable @s anvil

@@ -26,6 +26,8 @@ Rewards are given automatically when a milestone is crossed. A title and chat me
 
 > The "Milking" track fires on any empty bucket use (`minecraft.used:minecraft.bucket`), not exclusively milking a cow. "Using shears" fires on any shears use, not exclusively shearing sheep.
 
+> "Armour Trims" isn't a tiered progression track — it has no stages or final reward. Every time you apply any of the 18 armour trim smithing templates, you're instantly given one of that same template back, so trimming armour never costs you your only copy of a template. The `/trigger trims` sidebar just shows a running total of templates used.
+
 ---
 
 ## Leaderboard & Triggers
@@ -45,6 +47,7 @@ Any player can switch what the whole server's **sidebar** displays with `/trigge
 | `/trigger milk` | Milk Collected |
 | `/trigger eggs` | Eggs Collected |
 | `/trigger bread` | Bread Baked |
+| `/trigger trims` | Armour Trims |
 | `/trigger off` | Hides the sidebar |
 | `/trigger metric` | Posts a clickable menu of every command above |
 

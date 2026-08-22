@@ -37,6 +37,7 @@ LB_METRICS = [
     ("milk",    "rwd_milk",        "Milk Collected",   "white"),
     ("eggs",    "rwd_egg",         "Eggs Collected",   "yellow"),
     ("bread",   "rwd_bread",       "Bread Baked",      "gold"),
+    ("trims",   "rwd_trims",       "Armour Trims",     "dark_aqua"),
 ]
 
 def roman(n):
@@ -599,6 +600,17 @@ DIRT_TYPES = ["dirt","coarse_dirt","rooted_dirt","grass_block","mycelium","podzo
 # All six spear material tiers (key_fn: strip _spear, take 6 chars)
 SPEAR_TYPES = ["wooden_spear","stone_spear","iron_spear","golden_spear","diamond_spear","netherite_spear"]
 
+# Armour trim templates: (stat/objective key, item-name suffix). Key differs
+# from item name only for "wayfindr" (kept short to match the rest of the
+# rwd_t_*_l objective names) vs. the real item "wayfinder_armor_trim...".
+TRIM_TYPES = [
+    ("coast","coast"), ("dune","dune"), ("eye","eye"), ("flow","flow"),
+    ("host","host"), ("raiser","raiser"), ("rib","rib"), ("sentry","sentry"),
+    ("shaper","shaper"), ("silence","silence"), ("snout","snout"), ("spire","spire"),
+    ("tide","tide"), ("vex","vex"), ("ward","ward"), ("wayfindr","wayfinder"),
+    ("wild","wild"), ("bolt","bolt"),
+]
+
 load_lines = [
     "# Remove any leftover debug objectives",
     "scoreboard objectives remove rwd_test",
@@ -615,6 +627,8 @@ for b in DIRT_TYPES:
 for b in SPEAR_TYPES:
     key = b.replace("_spear","")[:6] + "_sp"
     load_lines.append(f'scoreboard objectives add st_{key} minecraft.used:minecraft.{b}')
+for key, item in TRIM_TYPES:
+    load_lines.append(f'scoreboard objectives add st_t_{key} minecraft.used:minecraft.{item}_armor_trim_smithing_template')
 
 load_lines += [
     "",
@@ -681,6 +695,11 @@ load_lines += [
     "scoreboard objectives add rwd_grapple minecraft.used:minecraft.carrot_on_a_stick",
     "scoreboard objectives add rwd_grapple_last dummy",
     "",
+    "# Armour trim tracking (v3 migration)",
+    "scoreboard objectives add rwd_v3 dummy",
+    "scoreboard objectives add rwd_trims dummy",
+] + [f"scoreboard objectives add rwd_t_{key}_l dummy" for key, _ in TRIM_TYPES] + [
+    "",
     "scoreboard objectives add anvil trigger",
 ] + [f"scoreboard objectives add smite_{p} trigger" for p in SMITE_PLAYERS] + [
     f"scoreboard objectives add immortal_{p} trigger" for p in SMITE_PLAYERS
@@ -735,6 +754,7 @@ execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_shear_st
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_milk_stage=..19}] run function rewards:update/milk
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_egg_stage=..19}] run function rewards:update/egg
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_bread_stage=..19}] run function rewards:update/bread
+execute if score .tick rwd_tick matches 0 run execute as @a run function rewards:update/trims
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_log_stage=..19}] run function rewards:check/logs
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_ore_stage=..19}] run function rewards:check/ores
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_kill_stage=..19}] run function rewards:check/kills
@@ -873,6 +893,17 @@ def write_update_simple(category, total_obj, last_obj):
 write_update("logs", LOG_TYPES, lambda b: b[:12], "rwd_logs", "rwd_log_last")
 write_update("ores", ORE_TYPES, lambda b: b.replace("deepslate_","ds_").replace("_ore","")[:12], "rwd_ores", "rwd_ore_last")
 write_update("dirt", DIRT_TYPES, lambda b: f"d_{b[:9]}", "rwd_dirt", "rwd_dirt_last")
+
+# Trims: no reward tiers — sum usage into rwd_trims for the leaderboard, and
+# separately return one template of each type the instant its use count changes.
+trims_lines = ["# Sum all trim stats into rwd_trims", "scoreboard players set @s rwd_trims 0"]
+trims_lines += [f"scoreboard players operation @s rwd_trims += @s st_t_{key}" for key, _ in TRIM_TYPES]
+trims_lines.append("# Return the template used since last tick")
+for key, item in TRIM_TYPES:
+    trims_lines.append(f"execute unless score @s st_t_{key} = @s rwd_t_{key}_l run give @s minecraft:{item}_armor_trim_smithing_template 1")
+    trims_lines.append(f"execute unless score @s st_t_{key} = @s rwd_t_{key}_l run scoreboard players operation @s rwd_t_{key}_l = @s st_t_{key}")
+write("data/rewards/function/update/trims.mcfunction", "\n".join(trims_lines))
+
 # Kills: combine mob + player kills into rwd_tot_kills, then queue progress display
 # Don't sync rwd_kill_last while delay > 0 so the change is still pending when delay expires
 write("data/rewards/function/update/kills.mcfunction", "\n".join([
@@ -1021,6 +1052,9 @@ write("data/rewards/function/player_init.mcfunction", "\n".join([
     # Migration: runs once for players initialized before v2 objectives were added
     "scoreboard players add @s rwd_v2 0",
     "execute if score @s rwd_v2 matches 0 if score @s rwd_init matches 1.. run function rewards:migrate_v2",
+    # Migration: runs once for players initialized before v3 (trim tracking) objectives were added
+    "scoreboard players add @s rwd_v3 0",
+    "execute if score @s rwd_v3 matches 0 if score @s rwd_init matches 1.. run function rewards:migrate_v3",
 ]))
 
 # Migration for players initialized before spear/mace/enchanting track was added.
@@ -1045,6 +1079,15 @@ write("data/rewards/function/migrate_v2.mcfunction", "\n".join([
     "scoreboard players set @s rwd_v2 1",
     "function rewards:lb/enable_triggers",
 ]))
+
+# Migration for players initialized before armour trim tracking was added.
+write("data/rewards/function/migrate_v3.mcfunction", "\n".join(
+    [f"scoreboard players add @s rwd_t_{key}_l 0" for key, _ in TRIM_TYPES]
+    + [
+        "scoreboard players add @s rwd_trims 0",
+        "scoreboard players set @s rwd_v3 1",
+    ]
+))
 
 
 write("data/rewards/function/do_init.mcfunction", "\n".join([

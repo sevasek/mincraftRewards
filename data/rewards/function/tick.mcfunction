@@ -14,6 +14,7 @@ execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_shear_st
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_milk_stage=..19}] run function rewards:update/milk
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_egg_stage=..19}] run function rewards:update/egg
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_bread_stage=..19}] run function rewards:update/bread
+execute if score .tick rwd_tick matches 0 run execute as @a run function rewards:update/trims
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_log_stage=..19}] run function rewards:check/logs
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_ore_stage=..19}] run function rewards:check/ores
 execute if score .tick rwd_tick matches 0 run execute as @a[scores={rwd_kill_stage=..19}] run function rewards:check/kills
